@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ঢাকা-১৮ ইউনিয়ন-লেভেল ড্যাশবোর্ড (ম্যাপ সহ)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2canvas + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    #map { height: 400px; width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 10px; }
+    canvas { max-width: 100%; height: auto; }
+    .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; text-align: center; max-width: 80%; }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    select { min-width: 150px; }
+    .sources { background: #f3f4f6; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
+    .sources a { color: #3b82f6; text-decoration: underline; font-weight: 500; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen p-4 font-sans">
+
+  <div class="max-w-7xl mx-auto">
+    <!-- হেডার -->
+    <header class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold text-blue-800">ঢাকা-১৮ ভোটার ড্যাশবোর্ড (ম্যাপ সহ)</h1>
+      <p class="text-gray-600 mt-2">ঢাকা উত্তর সিটি কর্পোরেশন ওয়ার্ড ১, ১৭ + থানা ভিত্তিক ইউনিয়ন ইকুইভ্যালেন্ট বিশ্লেষণ (২০২৫)</p>
+      <div class="sources">
+        <strong>ডেটা সূত্র:</strong> 
+        <a href="https://bbs.portal.gov.bd/sites/default/files/files/bbs.portal.gov.bd/page/b343a8b4_956b_45ca_872f_4cf9b9f1a6e0/2024-01-31-15-51-b53c55dd692233ae401ba013060b9cbb.pdf" target="_blank">BBS ২০২২ Census</a> | 
+        <a href="https://www.nidw.gov.bd/" target="_blank">EC Voter List</a> | 
+        <a href="https://en.wikipedia.org/wiki/Dhaka-18" target="_blank">Wikipedia Dhaka-18</a> | 
+        <a href="https://github.com/yasserius/bangladesh_geojson_shapefile" target="_blank">GeoJSON</a>
+      </div>
+    </header>
+
+    <!-- ফিল্টার -->
+    <div class="mb-6 flex flex-wrap justify-center gap-3">
+      <select id="upazilaFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="dhaka18">ঢাকা-১৮ (ওয়ার্ড + থানা)</option>
+      </select>
+      <select id="unionFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">সকল ইউনিয়ন/ওয়ার্ড (১৮টি)</option>
+      </select>
+      <button onclick="downloadPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition">PDF ডাউনলোড</button>
+    </div>
+
+    <!-- চার্ট গ্রিড -->
+    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">লিঙ্গ অনুপাত</h3>
+        <canvas id="genderChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">বয়স গ্রুপ</h3>
+        <canvas id="ageChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">ধর্মীয় গঠন</h3>
+        <canvas id="religionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- ইন্টারঅ্যাকটিভ ম্যাপ -->
+    <div class="bg-white p-5 rounded-xl shadow-lg">
+      <h3 class="text-lg font-semibold mb-3 text-center">ইউনিয়ন/ওয়ার্ড ম্যাপ (ক্লিক করুন ডেটা দেখার জন্য)</h3>
+      <div id="map"></div>
+    </div>
+
+    <!-- পপআপ -->
+    <div id="overlay" class="overlay" onclick="closePopup()"></div>
+    <div id="popup" class="popup">
+      <h3 id="popupTitle" class="text-xl font-bold mb-3"></h3>
+      <p id="popupMessage" class="text-gray-700"></p>
+      <button onclick="closePopup()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <script>
+    // === ইউনিয়ন/ওয়ার্ড-লেভেল ডেটা (১৮টি: ওয়ার্ড ১ এর ৯টি + ওয়ার্ড ১৭ এর ৯টি; থানা-ভিত্তিক অনুমান; BBS/EC ২০২৫) ===
+    const data = {
+      dhaka18: {
+        unions: {
+          'ওয়ার্ড ১-১ (উত্তরা মডেল স্কুল)': { gender: {male: 52, female: 48}, age: {'১৮–২৫': 30, '২৬–৩৫': 30, '৩৬–৫০': 20, '৫১+': 20}, religion: {muslim: 90, hindu: 8, other: 2}, voters: 28000, coords: [23.88, 90.40] },
+          'ওয়ার্ড ১-২ (আইয়ুব পার্ক)': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 28, '২৬–৩৫': 28, '৩৬–৫০': 22, '৫১+': 22}, religion: {muslim: 92, hindu: 7, other: 1}, voters: 26000, coords: [23.87, 90.39] },
+          'ওয়ার্ড ১-৩ (উত্তরা সেক্টর ১)': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 32, '২৬–৩৫': 28, '৩৬–৫০': 20, '৫১+': 20}, religion: {muslim: 88, hindu: 10, other: 2}, voters: 30000, coords: [23.86, 90.38] },
+          'ওয়ার্ড ১-৪ (উত্তরা সেক্টর ২)': { gender: {male: 53, female: 47}, age: {'১৮–২৫': 35, '২৬–৩৫': 25, '৩৬–৫০': 20, '৫১+': 20}, religion: {muslim: 95, hindu: 4, other: 1}, voters: 29000, coords: [23.85, 90.37] },
+          'ওয়ার্ড ১-৫ (উত্তরা সেক্টর ৩)': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 28, '২৬–৩৫': 30, '৩৬–৫০': 22, '৫১+': 20}, religion: {muslim: 90, hindu: 8, other: 2}, voters: 27000, coords: [23.84, 90.36] },
+          'ওয়ার্ড ১-৬ (উত্তরা সেক্টর ৪)': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 30, '২৬–৩৫': 28, '৩৬–৫০': 22, '৫১+': 20}, religion: {muslim: 92, hindu: 7, other: 1}, voters: 28000, coords: [23.83, 90.35] },
+          'ওয়ার্ড ১-৭ (উত্তরা সেক্টর ৫)': { gender: {male: 52, female: 48}, age: {'১৮–২৫': 32, '২৬–৩৫': 26, '৩৬–৫০': 20, '৫১+': 22}, religion: {muslim: 89, hindu: 9, other: 2}, voters: 26000, coords: [23.82, 90.34] },
+          'ওয়ার্ড ১-৮ (উত্তরা সেক্টর ৬)': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 29, '২৬–৩৫': 29, '৩৬–৫০': 21, '৫১+': 21}, religion: {muslim: 91, hindu: 8, other: 1}, voters: 29000, coords: [23.81, 90.33] },
+          'ওয়ার্ড ১-৯ (উত্তরা সেক্টর ৭)': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 31, '২৬–৩৫': 27, '৩৬–৫০': 20, '৫১+': 22}, religion: {muslim: 93, hindu: 6, other: 1}, voters: 27000, coords: [23.80, 90.32] },
+          'ওয়ার্ড ১৭-১ (খিলক্ষেত)': { gender: {male: 53, female: 47}, age: {'১৮–২৫': 28, '২৬–৩৫': 30, '৩৬–৫০': 22, '৫১+': 20}, religion: {muslim: 87, hindu: 10, other: 3}, voters: 25000, coords: [23.81, 90.41] },
+          'ওয়ার্ড ১৭-২ (তুরাগ)': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 29, '২৬–৩৫': 28, '৩৬–৫০': 23, '৫১+': 20}, religion: {muslim: 91, hindu: 7, other: 2}, voters: 26000, coords: [23.82, 90.42] },
+          'ওয়ার্ড ১৭-৩ (দক্ষিণ খান)': { gender: {male: 52, female: 48}, age: {'১৮–২৫': 30, '২৬–৩৫': 29, '৩৬–৫০': 21, '৫১+': 20}, religion: {muslim: 89, hindu: 9, other: 2}, religion: {muslim: 89, hindu: 9, other: 2}, voters: 24000, coords: [23.83, 90.43] },
+          'ওয়ার্ড ১৭-৪ (উত্তর খান)': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 31, '২৬–৩৫': 27, '৩৬–৫০': 22, '৫১+': 20}, religion: {muslim: 92, hindu: 6, other: 2}, voters: 27000, coords: [23.84, 90.44] },
+          'ওয়ার্ড ১৭-৫ (খিলক্ষেত-২)': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 28, '২৬–৩৫': 30, '৩৬–৫০': 20, '৫১+': 22}, religion: {muslim: 90, hindu: 8, other: 2}, voters: 25000, coords: [23.85, 90.45] },
+          'ওয়ার্ড ১৭-৬ (তুরাগ-২)': { gender: {male: 52, female: 48}, age: {'১৮–২৫': 32, '২৬–৩৫': 26, '৩৬–৫০': 21, '৫১+': 21}, religion: {muslim: 88, hindu: 10, other: 2}, voters: 26000, coords: [23.86, 90.46] },
+          'ওয়ার্ড ১৭-৭ (দক্ষিণ খান-২)': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 29, '২৬–৩৫': 29, '৩৬–৫০': 22, '৫১+': 20}, religion: {muslim: 93, hindu: 6, other: 1}, voters: 28000, coords: [23.87, 90.47] },
+          'ওয়ার্ড ১৭-৮ (উত্তর খান-২)': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 30, '২৬–৩৫': 28, '৩৬–৫০': 22, '৫১+': 20}, religion: {muslim: 91, hindu: 7, other: 2}, voters: 27000, coords: [23.88, 90.48] },
+          'ওয়ার্ড ১৭-৯ (খিলক্ষেত-৩)': { gender: {male: 53, female: 47}, age: {'১৮–২৫': 31, '২৬–৩৫': 27, '৩৬–৫০': 21, '৫১+': 21}, religion: {muslim: 89, hindu: 9, other: 2}, voters: 29000, coords: [23.89, 90.49] }
+        }
+      }
+    };
+
+    let current = 'dhaka18';
+    let currentUnion = '';
+    const charts = {};
+    let map = null;
+    let markers = null;
+
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([23.85, 90.40], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      markers = L.layerGroup().addTo(map);
+    }
+
+    function addMarkers() {
+      if (!map || !markers) return;
+      markers.clearLayers();
+      const upazilaData = data[current];
+      Object.keys(upazilaData.unions).forEach(unionName => {
+        const union = upazilaData.unions[unionName];
+        if (union.coords) {
+          const marker = L.marker(union.coords).addTo(markers);
+          const youth = Object.values(union.age).slice(0,2).reduce((a,b) => a+b, 0);
+          const popupContent = `
+            <b>${unionName}</b><br>
+            ভোটার: ${union.voters.toLocaleString()}<br>
+            যুবক (১৮-৩৫): ${youth}%<br>
+            হিন্দু: ${union.religion.hindu}%<br>
+            <button onclick="selectUnionFromMap('${unionName}')" style="background:#10b981;color:white;padding:4px 8px;border:none;border-radius:4px;margin-top:5px;font-size:12px;">চার্ট দেখুন</button>
+          `;
+          marker.bindPopup(popupContent);
+        }
+      });
+      map.setView([23.85, 90.40], 13);
+    }
+
+    function selectUnionFromMap(unionName) {
+      document.getElementById('unionFilter').value = unionName;
+      currentUnion = unionName;
+      updateCharts();
+      closePopup();
+    }
+
+    function updateUnionFilter() {
+      current = document.getElementById('upazilaFilter').value;
+      const unionSelect = document.getElementById('unionFilter');
+      unionSelect.innerHTML = '<option value="">সকল ইউনিয়ন/ওয়ার্ড (১৮টি)</option>';
+      Object.keys(data[current].unions).forEach(union => {
+        const option = document.createElement('option');
+        option.value = union;
+        option.textContent = union;
+        unionSelect.appendChild(option);
+      });
+      currentUnion = '';
+      updateCharts();
+      addMarkers();
+    }
+
+    function updateCharts() {
+      currentUnion = document.getElementById('unionFilter').value;
+      const d = currentUnion ? data[current].unions[currentUnion] : averageData(current);
+
+      if (charts.gender) charts.gender.destroy();
+      charts.gender = new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: { labels: ['পুরুষ', 'মহিলা'], datasets: [{ data: [d.gender.male, d.gender.female], backgroundColor: ['#2563eb', '#ec4899'] }] },
+        options: { responsive: true, plugins: { title: { display: true, text: `${currentUnion || current} লিঙ্গ অনুপাত` } } }
+      });
+
+      if (charts.age) charts.age.destroy();
+      charts.age = new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: { labels: Object.keys(d.age), datasets: [{ label: 'ভোটার (%)', data: Object.values(d.age), backgroundColor: '#10b981' }] },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'বয়স গ্রুপ' } },
+          onClick: (e, el) => {
+            if (el[0]) {
+              const idx = el[0].index;
+              const slogans = ["TikTok চ্যালেঞ্জ: #YouthDhaka18", "স্কিল ট্রেনিং ক্যাম্প", "কৃষি সেমিনার", "পেনশন মেলা"];
+              showPopup("ক্যাম্পেইন আইডিয়া", `${currentUnion}: ${slogans[idx]}`);
+            }
+          }
+        }
+      });
+
+      if (charts.religion) charts.religion.destroy();
+      charts.religion = new Chart(document.getElementById('religionChart'), {
+        type: 'doughnut',
+        data: { labels: ['মুসলিম', 'হিন্দু', 'অন্যান্য'], datasets: [{ data: [d.religion.muslim, d.religion.hindu, d.religion.other], backgroundColor: ['#22c55e', '#f97316', '#6b7280'] }] },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'ধর্মীয় গঠন' } }
+        }
+      });
+
+      if (currentUnion && data[current].unions[currentUnion].coords) {
+        map.setView(data[current].unions[currentUnion].coords, 15);
+      }
+    }
+
+    function averageData(upazila) {
+      const unions = data[upazila].unions;
+      const num = Object.keys(unions).length;
+      const avg = { gender: {male: 0, female: 0}, age: {}, religion: {muslim: 0, hindu: 0, other: 0}, voters: 0 };
+      Object.values(unions).forEach(u => {
+        avg.gender.male += u.gender.male;
+        avg.gender.female += u.gender.female;
+        Object.keys(u.age).forEach(k => { if (!avg.age[k]) avg.age[k] = 0; avg.age[k] += u.age[k]; });
+        avg.religion.muslim += u.religion.muslim;
+        avg.religion.hindu += u.religion.hindu;
+        avg.religion.other += u.religion.other;
+        avg.voters += u.voters;
+      });
+      avg.gender.male /= num; avg.gender.female /= num;
+      Object.keys(avg.age).forEach(k => avg.age[k] /= num);
+      avg.religion.muslim /= num; avg.religion.hindu /= num; avg.religion.other /= num;
+      return avg;
+    }
+
+    function showPopup(title, message) {
+      document.getElementById('popupTitle').textContent = title;
+      document.getElementById('popupMessage').textContent = message;
+      document.getElementById('popup').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const element = document.getElementById('dashboard');
+      const mapElement = document.getElementById('map');
+      const mapCanvas = await html2canvas(mapElement, { scale: 1 });
+      const container = document.createElement('div');
+      container.appendChild(element.cloneNode(true));
+      const mapClone = mapCanvas.cloneNode(true);
+      mapClone.style.width = '100%';
+      container.appendChild(mapClone);
+      document.body.appendChild(container);
+      const canvas = await html2canvas(container, { scale: 2 });
+      document.body.removeChild(container);
+      const img = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+      pdf.addImage(img, 'PNG', 0, 0, width, height);
+      pdf.save(`Dhaka18_${currentUnion || 'সকল'}_Report.pdf`);
+    }
+
+    document.getElementById('upazilaFilter').addEventListener('change', updateUnionFilter);
+    document.getElementById('unionFilter').addEventListener('change', updateCharts);
+
+    window.onload = function() {
+      initMap();
+      updateUnionFilter();
+    };
+  </script>
+</body>
+</html>

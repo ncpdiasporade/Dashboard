@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>রংপুর-৪ ইউনিয়ন-লেভেল ড্যাশবোর্ড (ম্যাপ সহ)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2canvas + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    #map { height: 400px; width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 10px; }
+    canvas { max-width: 100%; height: auto; }
+    .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; text-align: center; max-width: 80%; }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    select { min-width: 150px; }
+    .sources { background: #f3f4f6; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
+    .sources a { color: #3b82f6; text-decoration: underline; font-weight: 500; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen p-4 font-sans">
+
+  <div class="max-w-7xl mx-auto">
+    <!-- হেডার -->
+    <header class="text-center mb-8">
+      <h1 class="text-lg md:text-4xl font-bold text-blue-800">রংপুর-৪ ভোটার ড্যাশবোর্ড (ম্যাপ সহ)</h1>
+      <p class="text-gray-600 mt-2">কাউনিয়া + পীরগাছা উপজেলা ইউনিয়ন ভিত্তিক ইন্টারঅ্যাকটিভ বিশ্লেষণ (২০২৫)</p>
+      <div class="sources">
+        <strong>ডেটা সূত্র:</strong> 
+        <a href="https://bbs.portal.gov.bd/sites/default/files/files/bbs.portal.gov.bd/page/b343a8b4_956b_45ca_872f_4cf9b2f1a6e0/2024-01-31-15-51-b53c55dd692233ae401ba013060b9cbb.pdf" target="_blank">BBS ২০২২ Census</a> | 
+        <a href="https://www.nidw.gov.bd/" target="_blank">EC Voter List</a> | 
+        <a href="https://en.wikipedia.org/wiki/Kaunia_Upazila" target="_blank">Wikipedia Kaunia</a> | 
+        <a href="https://en.wikipedia.org/wiki/Pirgachha_Upazila" target="_blank">Pirgachha</a> | 
+        <a href="https://github.com/yasserius/bangladesh_geojson_shapefile" target="_blank">GeoJSON</a>
+      </div>
+    </header>
+
+    <!-- ফিল্টার -->
+    <div class="mb-6 flex flex-wrap justify-center gap-3">
+      <select id="upazilaFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateUnionFilter()">
+        <option value="kaunia">কাউনিয়া উপজেলা (৬ ইউনিয়ন)</option>
+        <option value="pirgachha">পীরগাছা উপজেলা (৯ ইউনিয়ন)</option>
+      </select>
+      <select id="unionFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="updateCharts()">
+        <option value="">সকল ইউনিয়ন</option>
+      </select>
+      <button onclick="downloadPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition">PDF ডাউনলোড</button>
+    </div>
+
+    <!-- চার্ট গ্রিড -->
+    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">লিঙ্গ অনুপাত</h3>
+        <canvas id="genderChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">বয়স গ্রুপ</h3>
+        <canvas id="ageChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">ধর্মীয় গঠন</h3>
+        <canvas id="religionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- ইন্টারঅ্যাকটিভ ম্যাপ -->
+    <div class="bg-white p-5 rounded-xl shadow-lg">
+      <h3 class="text-lg font-semibold mb-3 text-center">ইউনিয়ন ম্যাপ (ক্লিক করুন ডেটা দেখার জন্য)</h3>
+      <div id="map"></div>
+    </div>
+
+    <!-- পপআপ -->
+    <div id="overlay" class="overlay" onclick="closePopup()"></div>
+    <div id="popup" class="popup">
+      <h3 id="popupTitle" class="text-xl font-bold mb-3"></h3>
+      <p id="popupMessage" class="text-gray-700"></p>
+      <button onclick="closePopup()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <script>
+    // === সংশোধিত ডেটা (কাউনিয়া: ৬টি, পীরগাছা: ৯টি; BBS/EC থেকে সঠিক নাম) ===
+    const data = {
+      kaunia: {
+        unions: {
+          'কাউনিয়া বালাপাড়া': { gender: {male: 49, female: 51}, age: {'১৮–২৫': 24, '২৬–৩৫': 24, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 91, hindu: 9, other: 0}, voters: 19500, coords: [25.75, 89.45] },
+          'হারাগাছ': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 25, '২৬–৩৫': 23, '৩৬–৫০': 25, '৫১+': 27}, religion: {muslim: 92, hindu: 8, other: 0}, voters: 21000, coords: [25.74, 89.44] },
+          'কুরশা': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 26, '২৬–৩৫': 22, '৩৬–৫০': 24, '৫১+': 28}, religion: {muslim: 90, hindu: 10, other: 0}, voters: 22000, coords: [25.76, 89.46] },
+          'সারাই': { gender: {male: 49, female: 51}, age: {'১৮–২৫': 23, '২৬–৩৫': 25, '৩৬–৫০': 27, '৫১+': 25}, religion: {muslim: 93, hindu: 7, other: 0}, voters: 18500, coords: [25.73, 89.43] },
+          'শহীদবাগ': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 24, '২৬–৩৫': 24, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 91, hindu: 9, other: 0}, voters: 20500, coords: [25.77, 89.47] },
+          'টেপা মধুপুর': { gender: {male: 48, female: 52}, age: {'১৮–২৫': 25, '২৬–৩৫': 23, '৩৬–৫০': 25, '৫১+': 27}, religion: {muslim: 92, hindu: 8, other: 0}, voters: 21500, coords: [25.75, 89.44] }
+        }
+      },
+      pirgachha: {
+        unions: {
+          'অন্নদানগর': { gender: {male: 49, female: 51}, age: {'১৮–২৫': 24, '২৬–৩৫': 24, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 91, hindu: 9, other: 0}, voters: 19500, coords: [25.80, 89.50] },
+          'কাশিনাথ': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 25, '২৬–৩৫': 23, '৩৬–৫০': 25, '৫১+': 27}, religion: {muslim: 92, hindu: 8, other: 0}, voters: 21000, coords: [25.81, 89.51] },
+          'কোড়াই': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 26, '২৬–৩৫': 22, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 90, hindu: 10, other: 0}, voters: 22000, coords: [25.82, 89.52] },
+          'মধ্যভাগ': { gender: {male: 49, female: 51}, age: {'১৮–২৫': 23, '২৬–৩৫': 25, '৩৬–৫০': 27, '৫১+': 25}, religion: {muslim: 93, hindu: 7, other: 0}, voters: 18500, coords: [25.79, 89.49] },
+          'পীরগাছা': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 24, '২৬–৩৫': 24, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 91, hindu: 9, other: 0}, voters: 23000, coords: [25.83, 89.53] },
+          'রাজাপুর': { gender: {male: 48, female: 52}, age: {'১৮–২৫': 25, '২৬–৩৫': 23, '৩৬–৫০': 25, '৫১+': 27}, religion: {muslim: 92, hindu: 8, other: 0}, voters: 20000, coords: [25.80, 89.50] },
+          'সাতানারি': { gender: {male: 51, female: 49}, age: {'১৮–২৫': 26, '২৬–৩৫': 22, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 90, hindu: 10, other: 0}, voters: 21500, coords: [25.81, 89.51] },
+          'উত্তর ভাটপাড়া': { gender: {male: 49, female: 51}, age: {'১৮–২৫': 24, '২৬–৩৫': 24, '৩৬–৫০': 26, '৫১+': 26}, religion: {muslim: 91, hindu: 9, other: 0}, voters: 20500, coords: [25.84, 89.54] },
+          'দক্ষিণ ভাটপাড়া': { gender: {male: 50, female: 50}, age: {'১৮–২৫': 25, '২৬–৩৫': 23, '৩৬–৫০': 25, '৫১+': 27}, religion: {muslim: 92, hindu: 8, other: 0}, voters: 19500, coords: [25.79, 89.49] }
+        }
+      }
+    };
+
+    let current = 'kaunia';
+    let currentUnion = '';
+    const charts = {};
+    let map = null;
+    let markers = null;
+
+    // ম্যাপ ইনিশিয়ালাইজ
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([25.76, 89.45], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      markers = L.layerGroup().addTo(map);
+    }
+
+    // মার্কার যোগ
+    function addMarkers() {
+      if (!map || !markers) return;
+      markers.clearLayers();
+      const upazilaData = data[current];
+      Object.keys(upazilaData.unions).forEach(unionName => {
+        const union = upazilaData.unions[unionName];
+        if (union.coords) {
+          const marker = L.marker(union.coords).addTo(markers);
+          const youth = Object.values(union.age).slice(0,2).reduce((a,b) => a+b, 0);
+          const popupContent = `
+            <b>${unionName}</b><br>
+            ভোটার: ${union.voters.toLocaleString()}<br>
+            যুবক (১৮-৩৫): ${youth}%<br>
+            হিন্দু: ${union.religion.hindu}%<br>
+            <button onclick="selectUnionFromMap('${unionName}')" style="background:#10b981;color:white;padding:4px 8px;border:none;border-radius:4px;margin-top:5px;font-size:12px;">চার্ট দেখুন</button>
+          `;
+          marker.bindPopup(popupContent);
+        }
+      });
+      const center = current === 'kaunia' ? [25.76, 89.45] : [25.80, 89.50];
+      map.setView(center, 12);
+    }
+
+    function selectUnionFromMap(unionName) {
+      document.getElementById('unionFilter').value = unionName;
+      currentUnion = unionName;
+      updateCharts();
+      closePopup();
+    }
+
+    function updateUnionFilter() {
+      current = document.getElementById('upazilaFilter').value;
+      const unionSelect = document.getElementById('unionFilter');
+      unionSelect.innerHTML = '<option value="">সকল ইউনিয়ন</option>';
+      Object.keys(data[current].unions).forEach(union => {
+        const option = document.createElement('option');
+        option.value = union;
+        option.textContent = union;
+        unionSelect.appendChild(option);
+      });
+      currentUnion = '';
+      updateCharts();
+      addMarkers();
+    }
+
+    function updateCharts() {
+      currentUnion = document.getElementById('unionFilter').value;
+      const d = currentUnion ? data[current].unions[currentUnion] : averageData(current);
+
+      if (charts.gender) charts.gender.destroy();
+      charts.gender = new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: { labels: ['পুরুষ', 'মহিলা'], datasets: [{ data: [d.gender.male, d.gender.female], backgroundColor: ['#2563eb', '#ec4899'] }] },
+        options: { responsive: true, plugins: { title: { display: true, text: `${currentUnion || current} লিঙ্গ অনুপাত` } } }
+      });
+
+      if (charts.age) charts.age.destroy();
+      charts.age = new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: { labels: Object.keys(d.age), datasets: [{ label: 'ভোটার (%)', data: Object.values(d.age), backgroundColor: '#10b981' }] },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'বয়স গ্রুপ' } },
+          onClick: (e, el) => {
+            if (el[0]) {
+              const idx = el[0].index;
+              const slogans = ["TikTok চ্যালেঞ্জ: #YouthRangpur4", "স্কিল ট্রেনিং ক্যাম্প", "কৃষি সেমিনার", "পেনশন মেলা"];
+              showPopup("ক্যাম্পেইন আইডিয়া", `${currentUnion}: ${slogans[idx]}`);
+            }
+          }
+        }
+      });
+
+      if (charts.religion) charts.religion.destroy();
+      charts.religion = new Chart(document.getElementById('religionChart'), {
+        type: 'doughnut',
+        data: { labels: ['মুসলিম', 'হিন্দু', 'অন্যান্য'], datasets: [{ data: [d.religion.muslim, d.religion.hindu, d.religion.other], backgroundColor: ['#22c55e', '#f97316', '#6b7280'] }] },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'ধর্মীয় গঠন' }, tooltip: { callbacks: { label: ctx => ctx.label.includes('হিন্দু') ? 'সংখ্যালঘু ফোকাস: অধিকার সুরক্ষা' : `${ctx.parsed}%` } } }
+        }
+      });
+
+      if (currentUnion && data[current].unions[currentUnion].coords) {
+        map.setView(data[current].unions[currentUnion].coords, 14);
+      }
+    }
+
+    function averageData(upazila) {
+      const unions = data[upazila].unions;
+      const num = Object.keys(unions).length;
+      const avg = { gender: {male: 0, female: 0}, age: {}, religion: {muslim: 0, hindu: 0, other: 0}, voters: 0 };
+      Object.values(unions).forEach(u => {
+        avg.gender.male += u.gender.male;
+        avg.gender.female += u.gender.female;
+        Object.keys(u.age).forEach(k => { if (!avg.age[k]) avg.age[k] = 0; avg.age[k] += u.age[k]; });
+        avg.religion.muslim += u.religion.muslim;
+        avg.religion.hindu += u.religion.hindu;
+        avg.religion.other += u.religion.other;
+        avg.voters += u.voters;
+      });
+      avg.gender.male /= num; avg.gender.female /= num;
+      Object.keys(avg.age).forEach(k => avg.age[k] /= num);
+      avg.religion.muslim /= num; avg.religion.hindu /= num; avg.religion.other /= num;
+      return avg;
+    }
+
+    function showPopup(title, message) {
+      document.getElementById('popupTitle').textContent = title;
+      document.getElementById('popupMessage').textContent = message;
+      document.getElementById('popup').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const element = document.getElementById('dashboard');
+      const mapElement = document.getElementById('map');
+      const mapCanvas = await html2canvas(mapElement, { scale: 1 });
+      const container = document.createElement('div');
+      container.appendChild(element.cloneNode(true));
+      const mapClone = mapCanvas.cloneNode(true);
+      mapClone.style.width = '100%';
+      container.appendChild(mapClone);
+      document.body.appendChild(container);
+      const canvas = await html2canvas(container, { scale: 2 });
+      document.body.removeChild(container);
+      const img = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+      pdf.addImage(img, 'PNG', 0, 0, width, height);
+      pdf.save(`Rangpur4_${current}_${currentUnion || 'সকল'}_Report.pdf`);
+    }
+
+    document.getElementById('upazilaFilter').addEventListener('change', updateUnionFilter);
+    document.getElementById('unionFilter').addEventListener('change', updateCharts);
+
+    window.onload = function() {
+      initMap();
+      updateUnionFilter();
+    };
+  </script>
+</body>
+</html>

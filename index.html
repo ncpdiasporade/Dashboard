@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>বাংলাদেশ নির্বাচন ড্যাশবোর্ড – ল্যান্ডিং পেজ</title>
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .stats-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .chart-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+    .nav-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+    canvas { max-height: 300px; }
+    .footer { font-size: 0.85rem; color: #6b7280; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
+  <div class="max-w-7xl mx-auto">
+    <!-- হেডার -->
+    <header class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-indigo-800 mb-2">বাংলাদেশ নির্বাচন ড্যাশবোর্ড</h1>
+      <p class="text-xl text-gray-700">সর্বশেষ ভোটার তথ্য ও আসন-ভিত্তিক বিশ্লেষণ (২০২৫)</p>
+      <p class="text-sm text-gray-500 mt-1">ড্রাফট ফাইনাল ভোটার লিস্ট: ১২.৭৬ কোটি (EC, নভেম্বর ২০২৫)</p>
+    </header>
+
+    <!-- সামগ্রিক পরিসংখ্যান -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+      <div class="stats-card p-6 rounded-xl text-center">
+        <h2 class="text-3xl font-bold">১২.৭৬ কোটি</h2>
+        <p>মোট ভোটার</p>
+      </div>
+      <div class="stats-card p-6 rounded-xl text-center">
+        <h2 class="text-3xl font-bold">৫০.২%</h2>
+        <p>পুরুষ (৬.৪১ কোটি)</p>
+      </div>
+      <div class="stats-card p-6 rounded-xl text-center">
+        <h2 class="text-3xl font-bold">৪৯.৮%</h2>
+        <p>মহিলা (৬.৩৬ কোটি)</p>
+      </div>
+      <div class="stats-card p-6 rounded-xl text-center">
+        <h2 class="text-3xl font-bold">৭৫.৬%</h2>
+        <p>সাক্ষরতা (১৮+)</p>
+      </div>
+    </div>
+
+    <!-- চার্ট গ্রিড -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mb-10">
+      <!-- লিঙ্গ চার্ট -->
+      <div class="chart-container">
+        <h3 class="text-xl font-semibold mb-4 text-center">লিঙ্গ বিতরণ</h3>
+        <canvas id="genderChart"></canvas>
+      </div>
+      <!-- বয়স চার্ট -->
+      <div class="chart-container">
+        <h3 class="text-xl font-semibold mb-4 text-center">বয়স গ্রুপ</h3>
+        <canvas id="ageChart"></canvas>
+      </div>
+      <!-- শিক্ষা চার্ট -->
+      <div class="chart-container">
+        <h3 class="text-xl font-semibold mb-4 text-center">শিক্ষাগত যোগ্যতা (১৮+)</h3>
+        <canvas id="educationChart"></canvas>
+      </div>
+      <!-- পেশা চার্ট -->
+      <div class="chart-container">
+        <h3 class="text-xl font-semibold mb-4 text-center">পেশা বিতরণ (কর্মশক্তি)</h3>
+        <canvas id="occupationChart"></canvas>
+      </div>
+    </div>
+
+    <!-- নেভিগেশন: আসন সিলেক্ট করুন -->
+    <div class="nav-card text-center mb-10">
+      <h3 class="text-2xl font-semibold mb-4">আপনার নির্বাচনী এলাকা নির্বাচন করুন</h3>
+      <select id="constituencySelect" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full max-w-md">
+        <option value="">— আসন নির্বাচন করুন —</option>
+        <option value="cumilla4.html">কুমিল্লা-৪</option>
+        <option value="dhaka11.html">ঢাকা-১১</option>
+        <option value="dhaka9.html">ঢাকা-৯</option>
+        <option value="rangpur4.html">রংপুর-৪</option>
+        <option value="narsingdi1.html">নরসিংদী-১</option>
+        <!-- আরও ফাইল যোগ করুন -->
+      </select>
+      <br>
+      <button onclick="openDashboard()" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-medium">
+        ড্যাশবোর্ড দেখুন
+      </button>
+    </div>
+
+    <!-- সূত্র -->
+    <footer class="footer text-center">
+      <p>ডেটা উৎস: <strong>নির্বাচন কমিশন (EC)</strong> – ড্রাফট ফাইনাল লিস্ট ২০২৫ | 
+      <strong>BBS</strong> – জনগণনা ২০২২ & লেবার ফোর্স সার্ভে ২০১৬-১৭</p>
+      <p>ফাইনাল লিস্ট: ১৮ নভেম্বর ২০২৫ প্রকাশিত হবে।</p>
+    </footer>
+  </div>
+
+  <!-- চার্ট স্ক্রিপ্ট -->
+  <script>
+    // ১. লিঙ্গ চার্ট
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    new Chart(genderCtx, {
+      type: 'pie',
+      data: {
+        labels: ['পুরুষ', 'মহিলা'],
+        datasets: [{
+          data: [50.2, 49.8],
+          backgroundColor: ['#2563eb', '#ec4899'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: false }
+        }
+      }
+    });
+
+    // ২. বয়স চার্ট
+    const ageCtx = document.getElementById('ageChart').getContext('2d');
+    new Chart(ageCtx, {
+      type: 'bar',
+      data: {
+        labels: ['১৮–২৫', '২৬–৩৫', '৩৬–৫০', '৫১+'],
+        datasets: [{
+          label: 'ভোটার (%)',
+          data: [25, 25, 25, 25],
+          backgroundColor: '#10b981',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: false },
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 30 }
+        }
+      }
+    });
+
+    // ৩. শিক্ষা চার্ট
+    const educationCtx = document.getElementById('educationChart').getContext('2d');
+    new Chart(educationCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['অশিক্ষিত', 'প্রাথমিক', 'মাধ্যমিক', 'উচ্চশিক্ষা'],
+        datasets: [{
+          data: [24.4, 30, 25, 10],
+          backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: false }
+        }
+      }
+    });
+
+    // ৪. পেশা চার্ট
+    const occupationCtx = document.getElementById('occupationChart').getContext('2d');
+    new Chart(occupationCtx, {
+      type: 'bar',
+      data: {
+        labels: ['কৃষি', 'শিল্প', 'বাণিজ্য', 'পরিষেবা', 'অন্যান্য'],
+        datasets: [{
+          label: 'কর্মশক্তি (%)',
+          data: [40, 15, 20, 15, 10],
+          backgroundColor: '#f97316',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: false },
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 50 }
+        }
+      }
+    });
+
+    // ড্যাশবোর্ড খোলার ফাংশন
+    function openDashboard() {
+      const selected = document.getElementById('constituencySelect').value;
+      if (selected) {
+        window.open(selected, '_blank');
+      } else {
+        alert('দয়া করে একটি নির্বাচনী এলাকা নির্বাচন করুন!');
+      }
+    }
+  </script>
+</body>
+</html>
