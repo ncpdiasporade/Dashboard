@@ -14,10 +14,8 @@
   <!-- html2canvas + jsPDF -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <style>
-    #map { height: 500px; width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 10px; }
+    #map { height: 400px; width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 10px; }
     canvas { max-width: 100%; height: auto; }
     .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; text-align: center; max-width: 80%; }
     .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
@@ -25,13 +23,10 @@
     .sources { background: #f3f4f6; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
     .sources a { color: #3b82f6; text-decoration: underline; font-weight: 500; }
     .analysis-section { background: #f9fafb; padding: 20px; border-radius: 8px; margin-top: 20px; }
-    .tab-button { padding: 8px 16px; border: none; background: #e5e7eb; cursor: pointer; border-radius: 4px; margin-bottom: 5px; }
+    .tab-button { padding: 8px 16px; border: none; background: #e5e7eb; cursor: pointer; border-radius: 4px; }
     .tab-button.active { background: #3b82f6; color: white; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .tooltip { position: relative; display: inline-block; cursor: pointer; }
-    .tooltip .tooltiptext { visibility: hidden; width: 200px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; }
-    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
   </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen p-4 font-sans">
@@ -39,14 +34,13 @@
     <!-- হেডার -->
     <header class="text-center mb-8">
       <h1 class="text-3xl md:text-4xl font-bold text-blue-800">কুমিল্লা-৪ ভোটার ড্যাশবোর্ড (সম্পূর্ণ ১৫ ইউনিয়ন)</h1>
-      <p class="text-gray-600 mt-2">দেবিদ্বার উপজেলা + ইউনিয়ন ভিত্তিক ইন্টারঅ্যাকটিভ বিশ্লেষণ + ম্যাপ (২০২৫)</p>
+      <p class="text-gray-600 mt-2">দেবিদ্বার উপজেলা + ইউনিয়ন ভিত্তিক ইন্টারঅ্যাকটিভ বিশ্লেষণ + ম্যাপ (২০২৬)</p>
       <div class="sources">
         <strong>ডেটা সূত্র:</strong>
-        <a href="https://bbs.portal.gov.bd/sites/default/files/files/bbs.portal.gov.bd/page/b343a8b4_956b_45ca_872f_4cf9b2f1a6e0/2024-01-31-15-51-b53c55dd692233ae401ba013060b9cbb.pdf" target="_blank">BBS ২০২২ Census (জনসংখ্যা: ৪৭১,৯১৭; লিঙ্গ: পুরুষ ৪৬.৩%, মহিলা ৫৩.৭%)</a> |
-        <a href="https://ecs.gov.bd/" target="_blank">EC Voter List (ভোটার: ~৩.৫ লাখ)</a> |
+        <a href="https://bbs.portal.gov.bd/sites/default/files/files/bbs.portal.gov.bd/page/b343a8b4_956b_45ca_872f_4cf9b2f1a6e0/2024-01-31-15-51-b53c55dd692233ae401ba013060b9cbb.pdf" target="_blank">BBS ২০২২ Census</a> |
+        <a href="https://www.ecs.gov.bd/" target="_blank">EC Voter List (ড্রাফট ২০২৫)</a> |
         <a href="https://en.wikipedia.org/wiki/Debidwar_Upazila" target="_blank">Wikipedia Debidwar</a> |
-        <a href="https://github.com/yasserius/bangladesh_geojson_shapefile" target="_blank">GeoJSON</a> |
-        <a href="https://en.wikipedia.org/wiki/2024_Bangladeshi_general_election" target="_blank">২০২৪ নির্বাচন ডেটা</a>
+        <a href="https://github.com/yasserius/bangladesh_geojson_shapefile" target="_blank">GeoJSON</a>
       </div>
     </header>
 
@@ -58,11 +52,11 @@
       <select id="unionFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">সকল ইউনিয়ন (১৫টি)</option>
       </select>
-      <button onclick="downloadPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"><i class="fas fa-download mr-2"></i>PDF ডাউনলোড</button>
+      <button onclick="downloadPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition">PDF ডাউনলোড</button>
     </div>
 
     <!-- চার্ট গ্রিড -->
-    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <div class="bg-white p-5 rounded-xl shadow-lg">
         <h3 class="text-lg font-semibold mb-3 text-center">লিঙ্গ অনুপাত</h3>
         <canvas id="genderChart"></canvas>
@@ -83,17 +77,9 @@
         <h3 class="text-lg font-semibold mb-3 text-center">পেশা বিতরণ</h3>
         <canvas id="occupationChart"></canvas>
       </div>
-      <div class="bg-white p-5 rounded-xl shadow-lg">
+      <div class="bg-white p-6 rounded-xl shadow-lg">
         <h3 class="text-lg font-semibold mb-3 text-center">ভোটার টার্নআউট ইতিহাস</h3>
         <canvas id="turnoutChart"></canvas>
-      </div>
-      <div class="bg-white p-5 rounded-xl shadow-lg">
-        <h3 class="text-lg font-semibold mb-3 text-center">আয় স্তর</h3>
-        <canvas id="incomeChart"></canvas>
-      </div>
-      <div class="bg-white p-5 rounded-xl shadow-lg">
-        <h3 class="text-lg font-semibold mb-3 text-center">শহর-গ্রাম বিতরণ</h3>
-        <canvas id="urbanRuralChart"></canvas>
       </div>
     </div>
 
@@ -107,20 +93,17 @@
     <div class="analysis-section">
       <h2 class="text-2xl font-bold mb-4">কুমিল্লা-৪ বিশ্লেষণ</h2>
       <!-- ট্যাব নেভিগেশন -->
-      <div class="flex flex-wrap gap-2 mb-4">
-        <button class="tab-button active" onclick="openTab('demographics', this)"><i class="fas fa-users mr-1"></i>১. Demographic Data</button>
-        <button class="tab-button" onclick="openTab('voter', this)"><i class="fas fa-vote-yea mr-1"></i>২. Voter Data</button>
-        <button class="tab-button" onclick="openTab('sentiment', this)"><i class="fas fa-chart-line mr-1"></i>৩. Political Sentiment</button>
-        <button class="tab-button" onclick="openTab('issues', this)"><i class="fas fa-exclamation-triangle mr-1"></i>৪. Local Issues</button>
-        <button class="tab-button" onclick="openTab('community', this)"><i class="fas fa-handshake mr-1"></i>৫. Community Mapping</button>
-        <button class="tab-button" onclick="openTab('resources', this)"><i class="fas fa-money-bill-wave mr-1"></i>৬. Campaign Resources</button>
-        <button class="tab-button" onclick="openTab('digital', this)"><i class="fas fa-globe mr-1"></i>৭. Digital & Media</button>
-        <button class="tab-button" onclick="openTab('competitors', this)"><i class="fas fa-balance-scale mr-1"></i>৮. Competitor Analysis</button>
+      <div class="flex gap-2 mb-4">
+        <button class="tab-button active" onclick="openTab('demographics')">১. Demographic Data</button>
+        <button class="tab-button" onclick="openTab('voter-data')">২. Voter Data</button>
+        <button class="tab-button" onclick="openTab('sentiment')">৩. Political Sentiment</button>
+        <button class="tab-button" onclick="openTab('issues')">৪. Local Issues</button>
+        <button class="tab-button" onclick="openTab('community')">৫. Community Mapping</button>
       </div>
 
       <!-- ট্যাব কন্টেন্ট -->
       <div id="demographics" class="tab-content active">
-        <table class="w-full border-collapse border border-gray-300" id="demographicsTable">
+        <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-gray-100">
               <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
@@ -129,13 +112,47 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Dynamic rows added in JS -->
+            <tr>
+              <td class="border border-gray-300 p-2">বয়স বিতরণ</td>
+              <td class="border border-gray-300 p-2">যুবক (১৮-৩৫): ৪৭%, বয়স্ক (৫১+): ২৫%</td>
+              <td class="border border-gray-300 p-2">যুবকদের জন্য সোশ্যাল মিডিয়া, বয়স্কদের জন্য গ্রামীণ মিটিং</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">লিঙ্গ অনুপাত</td>
+              <td class="border border-gray-300 p-2">পুরুষ ৪৬.৩৪%, মহিলা ৫৩.৬৬%</td>
+              <td class="border border-gray-300 p-2">মহিলা-কেন্দ্রিক প্রতিশ্রুতি (স্বাস্থ্য, শিক্ষা)</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">শিক্ষা স্তর</td>
+              <td class="border border-gray-300 p-2">সাক্ষরতা ৭৬.৫৬%, অশিক্ষিত ২৩%</td>
+              <td class="border border-gray-300 p-2">নিম্নশিক্ষিতদের জন্য সহজ ভাষায় মিটিং</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">পেশা</td>
+              <td class="border border-gray-300 p-2">কৃষি ৭০%, ব্যবসা ১৫%, চাকরি ১০%</td>
+              <td class="border border-gray-300 p-2">কৃষকদের জন্য সাবসিডি প্রতিশ্রুতি</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">আয় স্তর</td>
+              <td class="border border-gray-300 p-2">গড় মাসিক ১২,০০০ টাকা, দারিদ্র্য ১৯.৫%</td>
+              <td class="border border-gray-300 p-2">দারিদ্র্য-কমানো প্রোগ্রাম প্রচার</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">শহর-গ্রাম</td>
+              <td class="border border-gray-300 p-2">৮৫% গ্রামীণ</td>
+              <td class="border border-gray-300 p-2">গ্রামে দরজা-দরজা ক্যাম্পেইন</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">ধর্ম/জাতি</td>
+              <td class="border border-gray-300 p-2">মুসলিম ৯৫%, হিন্দু ৪.৫%</td>
+              <td class="border border-gray-300 p-2">হিন্দু এলাকায় সুরক্ষা-কেন্দ্রিক মেসেজ</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
-      <div id="voter" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="voterTable">
+      <div id="voter-data" class="tab-content">
+        <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-gray-100">
               <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
@@ -144,13 +161,47 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Dynamic rows added in JS -->
+            <tr>
+              <td class="border border-gray-300 p-2">নিবন্ধিত ভোটার</td>
+              <td class="border border-gray-300 p-2">৩.৮৮ লাখ (অনুমানিক, পুরুষ ১.৯৭ লাখ, মহিলা ১.৯২ লাখ)</td>
+              <td class="border border-gray-300 p-2">সদরে বেশি ফোকাস, মোবাইল ভ্যান</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">ভোটার টার্নআউট</td>
+              <td class="border border-gray-300 p-2">২০১৮: ৮০.২%, ২০২৪: ৪০%</td>
+              <td class="border border-gray-300 p-2">৬০%+ লক্ষ্য, গ্রামে মোবিলাইজেশন</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">মার্জিন অফ ভিক্টরি</td>
+              <td class="border border-gray-300 p-2">২০১৮: AL ১,৮১,৭২৫ ভোট (১,০০,০০০+)</td>
+              <td class="border border-gray-300 p-2">AL-এর বেস শক্তিশালী, BNP সুইং এলাকায় ফোকাস</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">পোলিং সেন্টার</td>
+              <td class="border border-gray-300 p-2">১৫০+ (স্কুল/কলেজে)</td>
+              <td class="border border-gray-300 p-2">সেন্টার কাছে সচেতনতা ক্যাম্প</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">সুইং এরিয়া</td>
+              <td class="border border-gray-300 p-2">মোহনপুর, রাজামেহের</td>
+              <td class="border border-gray-300 p-2">দ্বিগুণ ক্যাম্পেইন, লোকাল নেতাদের সাথে</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">স্ট্রংহোল্ড</td>
+              <td class="border border-gray-300 p-2">বরকামতা, ধামতী</td>
+              <td class="border border-gray-300 p-2">রক্ষণাবেক্ষণ-কেন্দ্রিক ক্যাম্পেইন</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">ভোটার আইডি কভারেজ</td>
+              <td class="border border-gray-300 p-2">৯৮%+ (আপডেট ৯৫%)</td>
+              <td class="border border-gray-300 p-2">অবশিষ্ট ২% এর জন্য মোবাইল ক্যাম্প</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <div id="sentiment" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="sentimentTable">
+        <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-gray-100">
               <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
@@ -159,13 +210,37 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Dynamic rows added in JS -->
+            <tr>
+              <td class="border border-gray-300 p-2">পাবলিক অপিনিয়ন</td>
+              <td class="border border-gray-300 p-2">AL ৬৫%, BNP ২৫% (EC ২০২৫)</td>
+              <td class="border border-gray-300 p-2">AL-এর ছবি শক্তিশালী করুন</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">সোশ্যাল মিডিয়া সেন্টিমেন্ট</td>
+              <td class="border border-gray-300 p-2">X-এ ৭০% AL-এর পক্ষে</td>
+              <td class="border border-gray-300 p-2">ফেসবুক অ্যাডস চালান</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">কী ইস্যু</td>
+              <td class="border border-gray-300 p-2">মূল্যস্ফীতি ৮৫%, বেকারত্ব ৭০%</td>
+              <td class="border border-gray-300 p-2">মূল্যস্ফীতি কমানোর পরিকল্পনা</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">উন্নয়ন ধারণা</td>
+              <td class="border border-gray-300 p-2">রাস্তা ৬৫% সন্তুষ্টি, স্বাস্থ্য ৪০%</td>
+              <td class="border border-gray-300 p-2">স্থানীয় উন্নয়নের ছবি দেখান</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">দল/প্রার্থী ইমেজ</td>
+              <td class="border border-gray-300 p-2">AL বিশ্বাস ৬৫%, BNP ৩৫%</td>
+              <td class="border border-gray-300 p-2">স্থিতিশীলতার ছবি</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <div id="issues" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="issuesTable">
+        <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-gray-100">
               <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
@@ -174,13 +249,42 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Dynamic rows added in JS -->
+            <tr>
+              <td class="border border-gray-300 p-2">রাস্তা/পরিবহন</td>
+              <td class="border border-gray-300 p-2">৬৫% পাকা রাস্তা, বন্যায় ক্ষতি</td>
+              <td class="border border-gray-300 p-2">বন্যা-প্রতিরোধী রাস্তা প্রতিশ্রুতি</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">বিদ্যুৎ/পানি</td>
+              <td class="border border-gray-300 p-2">বিদ্যুৎ ৮৫%, পানি ৭০%</td>
+              <td class="border border-gray-300 p-2">সৌর বিদ্যুৎ প্রকল্প</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">স্বাস্থ্য</td>
+              <td class="border border-gray-300 p-2">১টি কমপ্লেক্স, ৫টি ক্লিনিক</td>
+              <td class="border border-gray-300 p-2">স্বাস্থ্য ক্যাম্প</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">শিক্ষা</td>
+              <td class="border border-gray-300 p-2">স্কুল ১৫০+, কলেজ ৫টি</td>
+              <td class="border border-gray-300 p-2">ডিজিটাল ক্লাসরুম</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">কৃষি/বাজার</td>
+              <td class="border border-gray-300 p-2">৮০% কৃষি, ৫টি বাজার</td>
+              <td class="border border-gray-300 p-2">কৃষক সাবসিডি বাজার</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">চাকরি/ব্যবসা</td>
+              <td class="border border-gray-300 p-2">বেকারত্ব ৪.৫%, ছোট ব্যবসা ২০%</td>
+              <td class="border border-gray-300 p-2">ইয়ুথ এমপ্লয়মেন্ট স্কিম</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <div id="community" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="communityTable">
+        <table class="w-full border-collapse border border-gray-300">
           <thead>
             <tr class="bg-gray-100">
               <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
@@ -189,52 +293,36 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Dynamic rows added in JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div id="resources" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="resourcesTable">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
-              <th class="border border-gray-300 p-2">তথ্য</th>
-              <th class="border border-gray-300 p-2">প্রচারণা টিপ</th>
+            <tr>
+              <td class="border border-gray-300 p-2">ইউনিয়ন চেয়ারম্যান</td>
+              <td class="border border-gray-300 p-2">১৫ জন (বরকামতা – AL-সমর্থক)</td>
+              <td class="border border-gray-300 p-2">AL-সমর্থকদের সাথে অ্যালায়েন্স</td>
             </tr>
-          </thead>
-          <tbody>
-            <!-- Dynamic rows added in JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div id="digital" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="digitalTable">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
-              <th class="border border-gray-300 p-2">তথ্য</th>
-              <th class="border border-gray-300 p-2">প্রচারণা টিপ</th>
+            <tr>
+              <td class="border border-gray-300 p-2">ধর্মীয় নেতা</td>
+              <td class="border border-gray-300 p-2">ইমাম/মাদ্রাসা ~২০০, হিন্দু কমিটি</td>
+              <td class="border border-gray-300 p-2">ইমামদের সাথে সমন্বয় মিটিং</td>
             </tr>
-          </thead>
-          <tbody>
-            <!-- Dynamic rows added in JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div id="competitors" class="tab-content">
-        <table class="w-full border-collapse border border-gray-300" id="competitorsTable">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="border border-gray-300 p-2">ক্যাটাগরি</th>
-              <th class="border border-gray-300 p-2">তথ্য</th>
-              <th class="border border-gray-300 p-2">প্রচারণা টিপ</th>
+            <tr>
+              <td class="border border-gray-300 p-2">যুব ক্লাব</td>
+              <td class="border border-gray-300 p-2">~৫০টি (দেবিদ্বার যুব সংঘ)</td>
+              <td class="border border-gray-300 p-2">ক্লাবে যুবক-কেন্দ্রিক ইভেন্ট</td>
             </tr>
-          </thead>
-          <tbody>
-            <!-- Dynamic rows added in JS -->
+            <tr>
+              <td class="border border-gray-300 p-2">ব্যবসায়ী/কন্ট্রাক্টর</td>
+              <td class="border border-gray-300 p-2">~১০০ জন (কৃষি-ভিত্তিক)</td>
+              <td class="border border-gray-300 p-2">অর্থনৈতিক উন্নয়ন মিটিং</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">মহিলা গ্রুপ/NGO</td>
+              <td class="border border-gray-300 p-2">~২০টি (দেবিদ্বার মহিলা সংস্থা)</td>
+              <td class="border border-gray-300 p-2">NGO-এর সাথে মহিলা ক্যাম্প</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 p-2">সোশ্যাল মিডিয়া/সাংবাদিক</td>
+              <td class="border border-gray-300 p-2">Debidwar Citizen গ্রুপ ৫,০০০+ মেম্বার</td>
+              <td class="border border-gray-300 p-2">গ্রুপে অ্যাডস, PR সাংবাদিকদের সাথে</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -251,103 +339,37 @@
 
   <script>
     // ট্যাব ফাংশন
-    function openTab(tabName, button) {
+    function openTab(tabName) {
       const tabContents = document.querySelectorAll('.tab-content');
       tabContents.forEach(tab => tab.classList.remove('active'));
       document.getElementById(tabName).classList.add('active');
 
       const tabButtons = document.querySelectorAll('.tab-button');
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
+      tabButtons.forEach(button => button.classList.remove('active'));
+      event.target.classList.add('active');
     }
 
-    // === সম্পূর্ণ ১৫ ইউনিয়নের ডেটা (আপডেটেড BBS ২০২২ থেকে) ===
+    // === সম্পূর্ণ ১৫ ইউনিয়নের ডেটা (আপডেটেড) ===
     const data = {
       debidwar: {
-        totalPopulation: 471917,
         unions: {
-          'বরকামতা': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 95, hindu: 5, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 24000, coords: [23.65, 91.05] },
-          'বড়শালঘর': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 96, hindu: 4, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 23000, coords: [23.64, 91.04] },
-          'দক্ষিণ গুনাইঘর': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 97, hindu: 3, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 22000, coords: [23.63, 91.03] },
-          'ধামতী': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 98, hindu: 2, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 25000, coords: [23.62, 91.02] },
-          'এলাহাবাদ': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 94, hindu: 6, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 21000, coords: [23.61, 91.01] },
-          'ফতেহাবাদ': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 96, hindu: 4, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 24000, coords: [23.60, 91.00] },
-          'জাফরগঞ্জ': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 97, hindu: 3, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 23000, coords: [23.59, 90.99] },
-          'মোহনপুর': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 98, hindu: 2, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 26000, coords: [23.58, 90.98] },
-          'রাজামেহের': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 94, hindu: 6, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 22000, coords: [23.57, 90.97] },
-          'রসুলপুর': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 96, hindu: 4, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 24000, coords: [23.56, 90.96] },
-          'সুবিল': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 97, hindu: 3, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 23000, coords: [23.55, 90.95] },
-          'সুলতানপুর': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 98, hindu: 2, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 25000, coords: [23.54, 90.94] },
-          'উত্তর গুনাইঘর': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 94, hindu: 6, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 21000, coords: [23.53, 90.93] },
-          'ভানী': { gender: {male: 46, female: 54}, age: {'০-১৭': 31, '১৮–৩৫': 36, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 96, hindu: 4, other: 0}, education: {illiterate: 24, primary: 29, secondary: 35, higher: 12}, occupation: {agriculture: 68, business: 16, service: 11, other: 5}, income: {low: 58, medium: 32, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 24000, coords: [23.52, 90.92] },
-          'ইউসুফপুর': { gender: {male: 46, female: 54}, age: {'০-১৭': 32, '১৮–৩৫': 35, '৩৬–৫০': 20, '৫১+': 13}, religion: {muslim: 97, hindu: 3, other: 0}, education: {illiterate: 23, primary: 30, secondary: 35, higher: 12}, occupation: {agriculture: 70, business: 15, service: 10, other: 5}, income: {low: 60, medium: 30, high: 10}, urbanRural: {urban: 0, rural: 100}, voters: 23000, coords: [23.51, 90.91] }
+          'বরকামতা': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 25, '২৬–৩৫': 22, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 95, hindu: 5, other: 0}, voters: 24000, coords: [23.65, 91.05] },
+          'বড়শালঘর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 26, '২৬–৩৫': 21, '৩৬–৫০': 24, '৫১+': 29}, religion: {muslim: 96, hindu: 4, other: 0}, voters: 23000, coords: [23.64, 91.04] },
+          'দক্ষিণ গুনাইঘর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 24, '২৬–৩৫': 23, '৩৬–৫০': 26, '৫১+': 27}, religion: {muslim: 97, hindu: 3, other: 0}, voters: 22000, coords: [23.63, 91.03] },
+          'ধামতী': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 27, '২৬–৩৫': 20, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 98, hindu: 2, other: 0}, voters: 25000, coords: [23.62, 91.02] },
+          'এলাহাবাদ': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 25, '২৬–৩৫': 22, '৩৬–৫০': 24, '৫১+': 29}, religion: {muslim: 94, hindu: 6, other: 0}, voters: 21000, coords: [23.61, 91.01] },
+          'ফতেহাবাদ': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 26, '২৬–৩৫': 21, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 96, hindu: 4, other: 0}, voters: 24000, coords: [23.60, 91.00] },
+          'জাফরগঞ্জ': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 24, '২৬–৩৫': 23, '৩৬–৫০': 26, '৫১+': 27}, religion: {muslim: 97, hindu: 3, other: 0}, voters: 23000, coords: [23.59, 90.99] },
+          'মোহনপুর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 27, '২৬–৩৫': 20, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 98, hindu: 2, other: 0}, voters: 26000, coords: [23.58, 90.98] },
+          'রাজামেহের': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 25, '২৬–৩৫': 22, '৩৬–৫০': 24, '৫১+': 29}, religion: {muslim: 94, hindu: 6, other: 0}, voters: 22000, coords: [23.57, 90.97] },
+          'রসুলপুর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 26, '২৬–৩৫': 21, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 96, hindu: 4, other: 0}, voters: 24000, coords: [23.56, 90.96] },
+          'সুবিল': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 24, '২৬–৩৫': 23, '৩৬–৫০': 26, '৫১+': 27}, religion: {muslim: 97, hindu: 3, other: 0}, voters: 23000, coords: [23.55, 90.95] },
+          'সুলতানপুর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 27, '২৬–৩৫': 20, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 98, hindu: 2, other: 0}, voters: 25000, coords: [23.54, 90.94] },
+          'উত্তর গুনাইঘর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 25, '২৬–৩৫': 22, '৩৬–৫০': 24, '৫১+': 29}, religion: {muslim: 94, hindu: 6, other: 0}, voters: 21000, coords: [23.53, 90.93] },
+          'ভানী': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 26, '২৬–৩৫': 21, '৩৬–৫০': 25, '৫১+': 28}, religion: {muslim: 96, hindu: 4, other: 0}, voters: 24000, coords: [23.52, 90.92] },
+          'ইউসুফপুর': { gender: {male: 46, female: 54}, age: {'১৮–২৫': 24, '২৬–৩৫': 23, '৩৬–৫০': 26, '৫১+': 27}, religion: {muslim: 97, hindu: 3, other: 0}, voters: 23000, coords: [23.51, 90.91] }
         }
       }
-    };
-
-    // টেবিল ডেটা ডেফিনিশন (ডাইনামিক করার জন্য)
-    const tableData = {
-      demographics: [
-        { category: 'বয়স বিতরণ', data: 'যুবক (১৮-৩৫): ৩৫%, বয়স্ক (৫১+): ১৩%', tip: 'যুবকদের জন্য সোশ্যাল মিডিয়া, বয়স্কদের জন্য গ্রামীণ মিটিং' },
-        { category: 'লিঙ্গ অনুপাত', data: 'পুরুষ ৪৬%, মহিলা ৫৪%', tip: 'মহিলা-কেন্দ্রিক প্রতিশ্রুতি (স্বাস্থ্য, শিক্ষা)' },
-        { category: 'শিক্ষা স্তর', data: 'সাক্ষরতা ৭৬.৫৬%, অশিক্ষিত ২৩%, প্রাথমিক ৩০%', tip: 'নিম্নশিক্ষিতদের জন্য সহজ ভাষায় মিটিং' },
-        { category: 'পেশা', data: 'কৃষি ৭০%, ব্যবসা ১৫%, চাকরি ১০%', tip: 'কৃষকদের জন্য সাবসিডি প্রতিশ্রুতি' },
-        { category: 'আয় স্তর', data: 'নিম্ন আয় ৬০%, গড় মাসিক ~১২,০০০ টাকা', tip: 'দারিদ্র্য-কমানো প্রোগ্রাম প্রচার' },
-        { category: 'শহর-গ্রাম', data: '১০০% গ্রামীণ', tip: 'গ্রামে দরজা-দরজা ক্যাম্পেইন' },
-        { category: 'ধর্ম/জাতি', data: 'মুসলিম ৯৫%, হিন্দু ৫%', tip: 'হিন্দু এলাকায় সুরক্ষা-কেন্দ্রিক মেসেজ' }
-      ],
-      voter: [
-        { category: 'নিবন্ধিত ভোটার', data: '৩.৫ লাখ (পুরুষ ১.৬ লাখ, মহিলা ১.৯ লাখ)', tip: 'সদরে বেশি ফোকাস, মোবাইল ভ্যান' },
-        { category: 'ভোটার টার্নআউট', data: '২০১৮: ৮০%, ২০২৪: ৪২%', tip: '৬০%+ লক্ষ্য, গ্রামে মোবিলাইজেশন' },
-        { category: 'মার্জিন অফ ভিক্টরি', data: '২০১৮: AL ১,০০,০০০+ ভোট', tip: 'AL-এর বেস শক্তিশালী, BNP সুইং এলাকায় ফোকাস' },
-        { category: 'পোলিং সেন্টার', data: '১৫০+ (স্কুল/কলেজে)', tip: 'সেন্টার কাছে সচেতনতা ক্যাম্প' },
-        { category: 'সুইং এরিয়া', data: 'মোহনপুর, রাজামেহের', tip: 'দ্বিগুণ ক্যাম্পেইন, লোকাল নেতাদের সাথে' },
-        { category: 'স্ট্রংহোল্ড', data: 'বরকামতা, ধামতী', tip: 'রক্ষণাবেক্ষণ-কেন্দ্রিক ক্যাম্পেইন' },
-        { category: 'ভোটার আইডি কভারেজ', data: '৯৮%+ (আপডেট ৯৫%)', tip: 'অবশিষ্ট ২% এর জন্য মোবাইল ক্যাম্প' }
-      ],
-      sentiment: [
-        { category: 'পাবলিক অপিনিয়ন', data: 'AL ৬০%, BNP ৩০% (সাম্প্রতিক সার্ভে)', tip: 'AL-এর ছবি শক্তিশালী করুন' },
-        { category: 'সোশ্যাল মিডিয়া সেন্টিমেন্ট', data: '৬৫% AL-এর পক্ষে (X এবং FB থেকে)', tip: 'ফেসবুক অ্যাডস চালান' },
-        { category: 'কী ইস্যু', data: 'মূল্যস্ফীতি ৮০%, বেকারত্ব ৭৫%', tip: 'মূল্যস্ফীতি কমানোর পরিকল্পনা' },
-        { category: 'উন্নয়ন ধারণা', data: 'রাস্তা ৬০% সন্তুষ্টি, স্বাস্থ্য ৪৫%', tip: 'স্থানীয় উন্নয়নের ছবি দেখান' },
-        { category: 'দল/প্রার্থী ইমেজ', data: 'AL বিশ্বাস ৬০%, BNP ৩৫%', tip: 'স্থিতিশীলতার ছবি' }
-      ],
-      issues: [
-        { category: 'রাস্তা/পরিবহন', data: '৬৫% পাকা রাস্তা, বন্যায় ক্ষতি, অবকাঠামো উন্নয়ন প্রয়োজন', tip: 'বন্যা-প্রতিরোধী রাস্তা প্রতিশ্রুতি' },
-        { category: 'বিদ্যুৎ/পানি', data: 'বিদ্যুৎ ৮৫%, পানি ৭০%', tip: 'সৌর বিদ্যুৎ প্রকল্প' },
-        { category: 'স্বাস্থ্য', data: '১টি কমপ্লেক্স, ৫টি ক্লিনিক', tip: 'স্বাস্থ্য ক্যাম্প' },
-        { category: 'শিক্ষা', data: 'স্কুল ১৫০+, কলেজ ৫টি', tip: 'ডিজিটাল ক্লাসরুম' },
-        { category: 'কৃষি/বাজার', data: '৮০% কৃষি, খাদি শিল্প হ্রাস', tip: 'কৃষক সাবসিডি বাজার' },
-        { category: 'চাকরি/ব্যবসা', data: 'বেকারত্ব ৪.৫%, ছোট ব্যবসা চ্যালেঞ্জ (পুঁজি অভাব)', tip: 'ইয়ুথ এমপ্লয়মেন্ট স্কিম' }
-      ],
-      community: [
-        { category: 'ইউনিয়ন চেয়ারম্যান', data: '১৫ জন (যেমন: কাজী মোজাম্মেল হক, হাসান রাফি রাজু)', tip: 'AL-সমর্থকদের সাথে অ্যালায়েন্স' },
-        { category: 'ধর্মীয় নেতা', data: 'ইমাম/মাদ্রাসা ~২০০, হিন্দু কমিটি', tip: 'ইমামদের সাথে সমন্বয় মিটিং' },
-        { category: 'যুব ক্লাব', data: '~৫০টি (দেবিদ্বার যুব সংঘ)', tip: 'ক্লাবে যুবক-কেন্দ্রিক ইভেন্ট' },
-        { category: 'ব্যবসায়ী/কন্ট্রাক্টর', data: '~১০০ জন (কৃষি-ভিত্তিক)', tip: 'অর্থনৈতিক উন্নয়ন মিটিং' },
-        { category: 'মহিলা গ্রুপ/NGO', data: '~২০টি (দেবিদ্বার মহিলা সংস্থা)', tip: 'NGO-এর সাথে মহিলা ক্যাম্প' },
-        { category: 'সোশ্যাল মিডিয়া/সাংবাদিক', data: 'Debidwar Citizen গ্রুপ ৫,০০০+ মেম্বার', tip: 'গ্রুপে অ্যাডস, PR সাংবাদিকদের সাথে' }
-      ],
-      resources: [
-        { category: 'বাজেট বিতরণ', data: 'প্রিন্টিং ২০%, মিডিয়া ৩০%, র্যালি ২৫%, লজিস্টিকস ২৫%', tip: 'উচ্চ-প্রভাব এলাকায় বেশি বাজেট' },
-        { category: 'ভলান্টিয়ার বেস', data: 'প্রতি ইউনিয়নে ৫০-১০০', tip: 'ট্রেনিং এবং মোটিভেশন প্রোগ্রাম' },
-        { category: 'কমিউনিকেশন চ্যানেল', data: 'সোশ্যাল মিডিয়া, রেডিও, ডোর-টু-ডোর', tip: 'যুবকদের জন্য ডিজিটাল ফোকাস' },
-        { category: 'ইভেন্ট লজিস্টিকস', data: 'লোকেশন, পারমিশন, ট্রান্সপোর্ট', tip: 'অগ্রিম প্ল্যানিং' }
-      ],
-      digital: [
-        { category: 'সোশ্যাল মিডিয়া ফলোয়ার', data: 'লোকাল গ্রুপ ৫,০০০+', tip: 'এঙ্গেজমেন্ট বাড়ান' },
-        { category: 'এঙ্গেজমেন্ট মেট্রিক্স', data: 'লাইকস/শেয়ার ৭০% AL-পক্ষে', tip: 'ভাইরাল কনটেন্ট তৈরি' },
-        { category: 'লোকাল অনলাইন নিউজ', data: 'ডেইলি সান, প্রথম আলো কভারেজ', tip: 'PR রিলিজ' },
-        { category: 'হোয়াটসঅ্যাপ/টেলিগ্রাম গ্রুপ', data: 'ইউনিয়ন-ভিত্তিক গ্রুপ', tip: 'রিয়েল-টাইম আপডেট' },
-        { category: 'কম্পিটিটর ডিজিটাল প্রেজেন্স', data: 'BNP অ্যাকটিভ, AL স্ট্রং', tip: 'কাউন্টার-ক্যাম্পেইন' }
-      ],
-      competitors: [
-        { category: 'পাস্ট ক্যান্ডিডেটস', data: '২০১৮: রাজী মোহাম্মদ ফখরুল (AL) - শক্তি: উন্নয়ন, দুর্বলতা: দুর্নীতি অভিযোগ', tip: 'দুর্বলতা হাইলাইট করুন' },
-        { category: 'কারেন্ট কম্পিটিটরস', data: 'AL, BNP, জামায়াত (যেমন: মনোয়ার সরকার - BNP)', tip: 'ডিফারেন্সিয়েশন স্ট্র্যাটেজি' },
-        { category: 'তাদের ভোটার বেস', data: 'AL: গ্রামীণ, BNP: যুবক', tip: 'বেস চুরি করার ক্যাম্পেইন' },
-        { category: 'প্রমিস এবং অ্যাচিভমেন্টস', data: 'AL: অবকাঠামো, BNP: স্বাধীনতা', tip: 'অ্যাচিভমেন্টস কম্পেয়ার' },
-        { category: 'লোকাল অ্যালায়েন্স', data: 'NCP, জামায়াত অ্যালায়েন্স', tip: 'রাইভালরি ব্যবহার' }
-      ]
     };
 
     let current = 'debidwar';
@@ -373,7 +395,7 @@
         const union = upazilaData.unions[unionName];
         if (union.coords) {
           const marker = L.marker(union.coords).addTo(markers);
-          const youth = union.age['১৮–৩৫'];
+          const youth = Object.values(union.age).slice(0,2).reduce((a,b) => a+b, 0);
           const popupContent = `
             <b>${unionName}</b><br>
             ভোটার: ${union.voters.toLocaleString()}<br>
@@ -391,7 +413,6 @@
       document.getElementById('unionFilter').value = unionName;
       currentUnion = unionName;
       updateCharts();
-      updateTables();
       closePopup();
     }
 
@@ -408,7 +429,6 @@
       });
       currentUnion = '';
       updateCharts();
-      updateTables();
       addMarkers();
     }
 
@@ -416,14 +436,14 @@
       currentUnion = document.getElementById('unionFilter').value;
       const d = currentUnion ? data[current].unions[currentUnion] : averageData(current);
 
-      destroyCharts();
-
+      if (charts.gender) charts.gender.destroy();
       charts.gender = new Chart(document.getElementById('genderChart'), {
         type: 'pie',
         data: { labels: ['পুরুষ', 'মহিলা'], datasets: [{ data: [d.gender.male, d.gender.female], backgroundColor: ['#2563eb', '#ec4899'] }] },
         options: { responsive: true, plugins: { title: { display: true, text: `${currentUnion || current} লিঙ্গ অনুপাত` } } }
       });
 
+      if (charts.age) charts.age.destroy();
       charts.age = new Chart(document.getElementById('ageChart'), {
         type: 'bar',
         data: { labels: Object.keys(d.age), datasets: [{ label: 'ভোটার (%)', data: Object.values(d.age), backgroundColor: '#10b981' }] },
@@ -440,40 +460,38 @@
         }
       });
 
+      if (charts.religion) charts.religion.destroy();
       charts.religion = new Chart(document.getElementById('religionChart'), {
         type: 'doughnut',
         data: { labels: ['মুসলিম', 'হিন্দু', 'অন্যান্য'], datasets: [{ data: [d.religion.muslim, d.religion.hindu, d.religion.other], backgroundColor: ['#22c55e', '#f97316', '#6b7280'] }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'ধর্মীয় গঠন' } } }
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'ধর্মীয় গঠন' } }
+        }
       });
 
+      // শিক্ষা চার্ট
+      if (charts.education) charts.education.destroy();
       charts.education = new Chart(document.getElementById('educationChart'), {
         type: 'pie',
-        data: { labels: ['অশিক্ষিত', 'প্রাথমিক', 'মাধ্যমিক', 'উচ্চশিক্ষা'], datasets: [{ data: Object.values(d.education), backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'] }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'শিক্ষা স্তর' } } }
+        data: { labels: ['অশিক্ষিত', 'প্রাথমিক', 'মাধ্যমিক', 'উচ্চশিক্ষা'], datasets: [{ data: [49, 30, 15, 6], backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'] }] },
+        options: { responsive: true, plugins: { title: { display: false } } }
       });
 
+      // পেশা চার্ট
+      if (charts.occupation) charts.occupation.destroy();
       charts.occupation = new Chart(document.getElementById('occupationChart'), {
         type: 'bar',
-        data: { labels: ['কৃষি', 'ব্যবসা', 'চাকরি', 'অন্যান্য'], datasets: [{ label: 'পেশা (%)', data: Object.values(d.occupation), backgroundColor: '#f97316' }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'পেশা বিতরণ' } }, scales: { y: { beginAtZero: true } } }
+        data: { labels: ['কৃষি', 'ব্যবসা', 'চাকরি', 'অন্যান্য'], datasets: [{ label: 'পেশা (%)', data: [70, 15, 10, 5], backgroundColor: '#f97316' }] },
+        options: { responsive: true, plugins: { title: { display: false } }, scales: { y: { beginAtZero: true } } }
       });
 
+      // ভোটার টার্নআউট চার্ট
+      if (charts.turnout) charts.turnout.destroy();
       charts.turnout = new Chart(document.getElementById('turnoutChart'), {
         type: 'line',
-        data: { labels: ['২০১৮', '২০২৪'], datasets: [{ label: 'টার্নআউট (%)', data: [80, 42], borderColor: '#ef4444', fill: false }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'ভোটার টার্নআউট ইতিহাস' } } }
-      });
-
-      charts.income = new Chart(document.getElementById('incomeChart'), {
-        type: 'pie',
-        data: { labels: ['নিম্ন', 'মধ্যম', 'উচ্চ'], datasets: [{ data: Object.values(d.income), backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'] }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'আয় স্তর' } } }
-      });
-
-      charts.urbanRural = new Chart(document.getElementById('urbanRuralChart'), {
-        type: 'doughnut',
-        data: { labels: ['শহর', 'গ্রাম'], datasets: [{ data: [d.urbanRural.urban, d.urbanRural.rural], backgroundColor: ['#22c55e', '#f97316'] }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'শহর-গ্রাম বিতরণ' } } }
+        data: { labels: ['২০১৮', '২০২৪'], datasets: [{ label: 'টার্নআউট (%)', data: [80.2, 40], borderColor: '#ef4444', fill: false }] },
+        options: { responsive: true, plugins: { title: { display: false } } }
       });
 
       if (currentUnion && data[current].unions[currentUnion].coords) {
@@ -481,16 +499,10 @@
       }
     }
 
-    function destroyCharts() {
-      Object.values(charts).forEach(chart => {
-        if (chart) chart.destroy();
-      });
-    }
-
     function averageData(upazila) {
       const unions = data[upazila].unions;
       const num = Object.keys(unions).length;
-      const avg = { gender: {male: 0, female: 0}, age: {}, religion: {muslim: 0, hindu: 0, other: 0}, education: {illiterate: 0, primary: 0, secondary: 0, higher: 0}, occupation: {agriculture: 0, business: 0, service: 0, other: 0}, income: {low: 0, medium: 0, high: 0}, urbanRural: {urban: 0, rural: 0}, voters: 0 };
+      const avg = { gender: {male: 0, female: 0}, age: {}, religion: {muslim: 0, hindu: 0, other: 0}, voters: 0 };
       Object.values(unions).forEach(u => {
         avg.gender.male += u.gender.male;
         avg.gender.female += u.gender.female;
@@ -498,38 +510,12 @@
         avg.religion.muslim += u.religion.muslim;
         avg.religion.hindu += u.religion.hindu;
         avg.religion.other += u.religion.other;
-        Object.keys(u.education).forEach(k => { if (!avg.education[k]) avg.education[k] = 0; avg.education[k] += u.education[k]; });
-        Object.keys(u.occupation).forEach(k => { if (!avg.occupation[k]) avg.occupation[k] = 0; avg.occupation[k] += u.occupation[k]; });
-        Object.keys(u.income).forEach(k => { if (!avg.income[k]) avg.income[k] = 0; avg.income[k] += u.income[k]; });
-        Object.keys(u.urbanRural).forEach(k => { if (!avg.urbanRural[k]) avg.urbanRural[k] = 0; avg.urbanRural[k] += u.urbanRural[k]; });
         avg.voters += u.voters;
       });
       avg.gender.male /= num; avg.gender.female /= num;
       Object.keys(avg.age).forEach(k => avg.age[k] /= num);
       avg.religion.muslim /= num; avg.religion.hindu /= num; avg.religion.other /= num;
-      Object.keys(avg.education).forEach(k => avg.education[k] /= num);
-      Object.keys(avg.occupation).forEach(k => avg.occupation[k] /= num);
-      Object.keys(avg.income).forEach(k => avg.income[k] /= num);
-      Object.keys(avg.urbanRural).forEach(k => avg.urbanRural[k] /= num);
-      avg.voters /= num;
       return avg;
-    }
-
-    function updateTables() {
-      // Clear and update all tables dynamically
-      Object.keys(tableData).forEach(tab => {
-        const tableBody = document.getElementById(`${tab}Table`).querySelector('tbody');
-        tableBody.innerHTML = '';
-        tableData[tab].forEach(row => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="border border-gray-300 p-2 tooltip">${row.category}<span class="tooltiptext">ক্লিক করে আরও বিস্তারিত দেখুন</span></td>
-            <td class="border border-gray-300 p-2">${row.data}</td>
-            <td class="border border-gray-300 p-2">${row.tip}</td>
-          `;
-          tableBody.appendChild(tr);
-        });
-      });
     }
 
     function showPopup(title, message) {
@@ -554,8 +540,6 @@
       const mapClone = mapCanvas.cloneNode(true);
       mapClone.style.width = '100%';
       container.appendChild(mapClone);
-      const analysis = document.querySelector('.analysis-section').cloneNode(true);
-      container.appendChild(analysis);
       document.body.appendChild(container);
       const canvas = await html2canvas(container, { scale: 2 });
       document.body.removeChild(container);
@@ -568,12 +552,11 @@
     }
 
     document.getElementById('upazilaFilter').addEventListener('change', updateUnionFilter);
-    document.getElementById('unionFilter').addEventListener('change', () => { updateCharts(); updateTables(); });
+    document.getElementById('unionFilter').addEventListener('change', updateCharts);
 
     window.onload = function() {
       initMap();
       updateUnionFilter();
-      updateTables();
     };
   </script>
 </body>
