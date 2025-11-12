@@ -13,7 +13,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
     body {
-      font-family: 'Noto Sans Bengali', 'Roboto', 'Segoe UI', sans-serif;
+      font-family: 'Hind Siliguri', sans-serif;
       background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
     }
     .hero-gradient {
@@ -474,10 +474,9 @@
     // Dashboard navigation function
     function openDashboard() {
       const selected = document.getElementById('constituencySelect').value;
-      console.log(selected);
       if (selected) {
-        // alert('ড্যাশবোর্ড খোলা হচ্ছে: ' + selected);
-        window.location.href = selected + '.html';
+        alert('ড্যাশবোর্ড খোলা হচ্ছে: ' + selected);
+        // In actual implementation: window.location.href = selected + '.html';
       } else {
         alert('দয়া করে একটি নির্বাচনী এলাকা নির্বাচন করুন!');
       }
