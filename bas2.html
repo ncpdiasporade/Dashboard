@@ -32,12 +32,12 @@
             flex-direction: column;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-      
+     
         .chart-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
         }
-      
+     
         .chart-card h3 {
             margin: 0 0 15px 0;
             font-size: 1.1rem;
@@ -146,14 +146,15 @@
             color: #00bfff;
         }
         .battery-icon {
-            width: 60px;
-            height: 120px;
-            border: 2px solid #00bfff;
-            border-radius: 5px;
-            position: relative;
-            overflow: hidden;
-            margin: 10px 0;
-        }
+    width: 60px;
+    height: 120px;
+    border: 2px solid #00bfff;
+     /* Remove top border to blend with cap */
+    border-radius: 0 0 5px 5px; /* Round only bottom corners */
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto; /* Center it */
+}
         .battery-fill {
             position: absolute;
             bottom: 0;
@@ -162,13 +163,16 @@
             transition: height 0.5s ease;
         }
         .battery-cap {
-            width: 20px;
-            height: 5px;
-            background-color: #00bfff;
-            border-radius: 2px;
-            margin: 0 auto;
-        }
-      
+    width: 20px;
+    height: 5px;
+    background-color: #00bfff;
+    border-radius: 2px;
+    margin: 0 auto -2px auto; /* Negative bottom margin to overlap with battery body */
+        margin-bottom: 5px;
+    position: relative;
+    z-index: 1; /* Ensure it's on top */
+}
+     
         /* Alert styling */
         .alert-indicator {
             position: absolute;
@@ -180,24 +184,24 @@
             background-color: #4CAF50;
             box-shadow: 0 0 8px #4CAF50;
         }
-      
+     
         .alert-warning {
             background-color: #FFC107;
             box-shadow: 0 0 8px #FFC107;
         }
-      
+     
         .alert-critical {
             background-color: #F44336;
             box-shadow: 0 0 8px #F44336;
             animation: pulse 1.5s infinite;
         }
-      
+     
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-      
+     
         /* Dashboard header */
         .dashboard-header {
             display: flex;
@@ -207,46 +211,46 @@
             padding-bottom: 15px;
             border-bottom: 1px solid #2a3b44;
         }
-      
+     
         .dashboard-title {
             font-size: 1.8rem;
             font-weight: 600;
             color: #e0e0e0;
         }
-      
+     
         .system-status {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-      
+     
         .status-badge {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 500;
         }
-      
+     
         .status-normal {
             background-color: #4CAF50;
             color: white;
         }
-      
+     
         .status-warning {
             background-color: #FFC107;
             color: #333;
         }
-      
+     
         .status-critical {
             background-color: #F44336;
             color: white;
         }
-      
+     
         .last-updated {
             font-size: 0.85rem;
             color: #aaa;
         }
-      
+     
         /* Mode Indicator */
         .mode-indicator {
             display: flex;
@@ -284,19 +288,19 @@
             font-size: 1.2rem;
             color: #aaa;
         }
-      
+     
         .power-negative {
             color: #00bfff;
         }
-      
+     
         .power-positive {
             color: #ff9800;
         }
-      
+     
         .power-zero {
             color: #4CAF50;
         }
-      
+     
         /* Real-time power flow */
         .power-flow-container {
             display: flex;
@@ -304,23 +308,23 @@
             justify-content: center;
             height: 100%;
         }
-      
+     
         .power-flow-visual {
             display: flex;
             align-items: center;
             gap: 20px;
         }
-      
+     
         .flow-direction {
             font-size: 2rem;
             color: #00bfff;
         }
-      
+     
         .flow-amount {
             font-size: 2.5rem;
             font-weight: bold;
         }
-      
+     
         /* Enhanced power flow visualization */
         .power-flow-diagram {
             display: flex;
@@ -329,32 +333,32 @@
             gap: 30px;
             margin-top: 15px;
         }
-      
+     
         .power-source {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
         }
-      
+     
         .power-source-icon {
             font-size: 2.5rem;
             padding: 15px;
             border-radius: 12px;
             background: rgba(0, 0, 0, 0.2);
         }
-      
+     
         .power-source-label {
             font-size: 0.9rem;
             color: #aaa;
         }
-      
+     
         .power-flow-arrow {
             font-size: 2.5rem;
             color: #00bfff;
             position: relative;
         }
-      
+     
         .power-flow-arrow::after {
             content: "";
             position: absolute;
@@ -365,37 +369,37 @@
             background: #00bfff;
             transform: translateY(-50%);
         }
-      
+     
         .power-flow-arrow.charging::after {
             background: #00bfff;
         }
-      
+     
         .power-flow-arrow.discharging::after {
             background: #ff9800;
         }
-      
+     
         .power-flow-arrow.idle::after {
             background: #4CAF50;
         }
-      
+     
         .power-flow-arrow.charging {
             color: #00bfff;
         }
-      
+     
         .power-flow-arrow.discharging {
             color: #ff9800;
         }
-      
+     
         .power-flow-arrow.idle {
             color: #4CAF50;
         }
-      
+     
         .power-flow-value {
             font-size: 2rem;
             font-weight: bold;
             margin-top: 10px;
         }
-      
+     
         .power-flow-label {
             font-size: 1rem;
             color: #aaa;
@@ -432,137 +436,192 @@
         }
         /* Thermometer and Voltmeter styles */
         /* New Temperature Visualization - Modern Style */
-.temp-visualization {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    position: relative;
-    padding: 20px;
-}
-
-.temp-scale-container {
-    height: 100%;
-    width: 80px;
-    position: relative;
-}
-
-.temp-scale {
-    position: relative;
-    width: 60px;
-    height: 100%;
-    background: linear-gradient(0deg, #4CAF50 0%, #FFC107 50%, #F44336 100%);
-    border-radius: 30px;
-    border: 3px solid #415a77;
-    margin: 0 auto;
-    overflow: hidden;
-}
-
-.temp-min-marker,
-.temp-max-marker {
-    position: absolute;
-    left: -15px;
-    width: 90px;
-    height: 6px;
-    background: #fff;
-    border-radius: 3px;
-    transform: translateY(50%);
-    z-index: 10;
-}
-
-.temp-min-marker {
-    background: #00bfff;
-    box-shadow: 0 0 15px #00bfff;
-}
-
-.temp-max-marker {
-    background: #ff4444;
-    box-shadow: 0 0 15px #ff4444;
-}
-
-.temp-min-marker::after,
-.temp-max-marker::after {
-    content: '';
-    position: absolute;
-    right: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-}
-
-.temp-min-marker::after {
-    border-left: 12px solid #00bfff;
-}
-
-.temp-max-marker::after {
-    border-left: 12px solid #ff4444;
-}
-
-.temp-values {
-    position: absolute;
-    bottom: 15px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 15px;
-    pointer-events: none;
-}
-
-.temp-value {
-    font-size: 1.4rem;
-    font-weight: bold;
-    padding: 10px 18px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-}
-
-.temp-value.min {
-    color: #00bfff;
-    border: 2px solid #00bfff;
-}
-
-.temp-value.max {
-    color: #ff4444;
-    border: 2px solid #ff4444;
-}
+        .temp-visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+            padding: 20px;
+        }
+        .temp-scale-container {
+            height: 100%;
+            width: 100px;
+            position: relative;
+        }
+        .temp-scale {
+            position: absolute;
+            right: 0;
+            width: 40px;
+            height: 100%;
+            background: linear-gradient(0deg, #4CAF50, #FFC107, #F44336);
+            border-radius: 20px;
+            margin: 10px 0;
+            border: 2px solid #415a77;
+        }
+        .temp-min-marker,
+        .temp-max-marker {
+            position: absolute;
+            left: -10px;
+            width: 60px;
+            height: 4px;
+            background: #fff;
+            border-radius: 2px;
+            transform: translateY(50%);
+        }
+        .temp-min-marker {
+            background: #00bfff;
+            box-shadow: 0 0 10px #00bfff;
+        }
+        .temp-max-marker {
+            background: #ff4444;
+            box-shadow: 0 0 10px #ff4444;
+        }
+        .temp-min-marker::after,
+        .temp-max-marker::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+        }
+        .temp-min-marker::after {
+            border-left: 8px solid #00bfff;
+        }
+        .temp-max-marker::after {
+            border-left: 8px solid #ff4444;
+        }
+        .temp-labels {
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: space-between;
+            height: 100%;
+            position: absolute;
+            left: 0;
+        }
+        .temp-label {
+            font-size: 0.8rem;
+            color: #a0a4a8;
+            text-align: left;
+        }
+        .temp-values {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 20px;
+        }
+        .temp-value-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        .temp-value-card.min {
+            border-left: 4px solid #00bfff;
+        }
+        .temp-value-card.max {
+            border-left: 4px solid #ff4444;
+        }
+        .temp-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .temp-value.min {
+            color: #00bfff;
+        }
+        .temp-value.max {
+            color: #ff4444;
+        }
+        .temp-type {
+            font-size: 0.9rem;
+            color: #a0a4a8;
+        }
+       
+        /* Voltage Visualization Styles - Updated */
         .voltmeter-container {
             display: flex;
-            justify-content: space-around;
+            flex-direction: column;
             align-items: center;
-            height: 100%;
+            justify-content: center;
+            height: auto;
+            padding: 10px;
         }
-        .voltmeter {
-            position: relative;
-            width: 150px;
-            height: 75px;
-            background: #444;
-            border-radius: 75px 75px 0 0;
-            overflow: hidden;
-            transform: rotate(180deg);
+       
+        .voltage-values {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 20px;
         }
-        .voltmeter-needle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 2px;
-            height: 60px;
-            background: #ff9800;
-            transform-origin: bottom center;
-            transition: transform 0.5s ease;
+       
+        .voltage-value {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-width: 120px;
         }
-        .voltmeter-label {
-            text-align: center;
-            margin-top: 10px;
+       
+        .voltage-value.min {
+            border-left: 4px solid #00bfff;
+        }
+       
+        .voltage-value.max {
+            border-left: 4px solid #ff4444;
+        }
+       
+        .voltage-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+       
+        .voltage-number.min {
+            color: #00bfff;
+        }
+       
+        .voltage-number.max {
+            color: #ff4444;
+        }
+       
+        .voltage-label {
+            font-size: 0.9rem;
+            color: #a0a4a8;
+        }
+       
+        .voltage-status {
+            margin-top: 20px;
+            padding: 10px 25px;
+            border-radius: 25px;
             font-size: 1rem;
-            transform: rotate(180deg);
+            font-weight: 600;
+            background: #2e7d32;
+            color: #fff;
+            border: 1px solid #4CAF50;
+            backdrop-filter: blur(5px);
         }
+       
+        .voltage-status.warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid #FFC107;
+        }
+       
+        .voltage-status.critical {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+            border: 1px solid #F44336;
+        }
+       
         .soc-label {
             position: absolute;
             top: 50%;
@@ -583,56 +642,39 @@
         </div>
     </div>
     <div id="dashboard-container">
-         <!--
-        <div class="chart-card card-medium">
-            <h3>Battery Operating Mode</h3>
-            <div class="mode-indicator" id="modeIndicator">
-              
-            </div>
-        </div>
-      
-        <div class="chart-card card-one">
-            <h3>Real-time Power Flow</h3>
-            <div class="power-flow-container">
-                <div class="power-flow-diagram" id="powerFlowDiagram">
-                  
-                </div>
-            </div>
-        </div>
-        -->
         <div class="chart-card card-small">
             <h3>Battery Operating Mode</h3>
             <div class="mode-indicator" id="modeIndicator">
-              
+             
             </div>
         </div>
         <!-- Row 2: Combined SOC & Available Energy, SoH, SS -->
         <!-- Combined Available Energy with SOC -->
-        <div class="chart-card card-medium">
-            <div class="alert-indicator" id="socAlert"></div>
-            <h3>Available Energy (kWh) & SOC</h3>
-            <div class="energy-flow-container">
-                <div class="energy-flow">
-                    <div class="flow-row">
-                        <div class="flow-item">
-                            <div class="flow-label">Available Charge</div>
-                            <div class="flow-value" id="chargeEnergyValue"></div>
-                        </div>
-                    </div>
-                    <div class="battery-icon">
-                        <div class="battery-fill" id="batteryFill"></div>
-                        <div class="soc-label" id="socLabel"></div>
-                    </div>
-                    <div class="battery-cap"></div>
-                    <div class="flow-row">
-                        <div class="flow-item">
-                            <div class="flow-label">Available Discharge</div>
-                            <div class="flow-value" id="dischargeEnergyValue"></div>
-                        </div>
-                    </div>
+        <div class="chart-card card-small">
+    <div class="alert-indicator" id="socAlert"></div>
+    <h3>Available Energy (kWh) & SOC</h3>
+    <div class="energy-flow-container">
+        <div class="energy-flow">
+            <div class="flow-row">
+                <div class="flow-item">
+                    <div class="flow-label">Available Charge</div>
+                    <div class="flow-value" id="chargeEnergyValue"></div>
+                </div>
+            </div>
+            <div class="battery-cap"></div> <!-- Moved to top for terminal-like appearance -->
+            <div class="battery-icon">
+                <div class="battery-fill" id="batteryFill"></div>
+                <div class="soc-label" id="socLabel"></div>
+            </div>
+            <div class="flow-row">
+                <div class="flow-item">
+                    <div class="flow-label">Available Discharge</div>
+                    <div class="flow-value" id="dischargeEnergyValue"></div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
         <!-- Health Gauge -->
         <div class="chart-card card-medium">
             <div class="alert-indicator" id="healthAlert"></div>
@@ -647,13 +689,13 @@
         </div>
         <!-- Row 4: Max Power -->
         <!-- Max Charge/Discharge Power -->
-        <div class="chart-card card-large">
+        <div class="chart-card card-small">
             <h3>Max Power (kW)</h3>
             <div id="powerChart" class="chart-div"></div>
         </div>
         <!-- Row 3: Ac Power (min/max), Ac Power (kW/kVAR) -->
         <!-- AC Power Gauge -->
-        <div class="chart-card card-medium">
+        <div class="chart-card card-small">
             <h3>AC Power</h3>
             <div id="acPowerGaugeChart" class="chart-div"></div>
         </div>
@@ -674,10 +716,22 @@
                             <div class="temp-min-marker" id="tempMinMarker"></div>
                             <div class="temp-max-marker" id="tempMaxMarker"></div>
                         </div>
+                        <!-- Temperature Labels Added Here -->
+                        <div class="temp-labels">
+                            <span class="temp-label">0°C</span>
+                            <span class="temp-label">30°C</span>
+                            <span class="temp-label">60°C</span>
+                        </div>
                     </div>
                     <div class="temp-values">
-                        <div class="temp-value min" id="tempMinValue">26°C</div>
-                        <div class="temp-value max" id="tempMaxValue">38°C</div>
+                        <div class="temp-value-card min">
+                            <div class="temp-value min" id="tempMinValue">26°C</div>
+                            <div class="temp-type">Minimum</div>
+                        </div>
+                        <div class="temp-value-card max">
+                            <div class="temp-value max" id="tempMaxValue">38°C</div>
+                            <div class="temp-type">Maximum</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -692,18 +746,20 @@
             <div class="alert-indicator" id="voltageAlert"></div>
             <h3>Battery Voltage (V)</h3>
             <div class="voltmeter-container">
-                <div>
-                    <div class="voltmeter">
-                        <div class="voltmeter-needle" id="voltageMinNeedle"></div>
+                <div id="voltageChart" style="width: 100%; height: 180px;"></div>
+              
+                <!-- Min/Max Voltage Values - Similar to Temperature -->
+                <div class="voltage-values">
+                    <div class="voltage-value min">
+                        <div class="voltage-number min" id="voltageMinValue">392V</div>
+                        <div class="voltage-label">Minimum</div>
                     </div>
-                    <div class="voltmeter-label" id="voltageMinLabel"></div>
-                </div>
-                <div>
-                    <div class="voltmeter">
-                        <div class="voltmeter-needle" id="voltageMaxNeedle"></div>
+                    <div class="voltage-value max">
+                        <div class="voltage-number max" id="voltageMaxValue">408V</div>
+                        <div class="voltage-label">Maximum</div>
                     </div>
-                    <div class="voltmeter-label" id="voltageMaxLabel"></div>
                 </div>
+           
             </div>
         </div>
         <!-- Voltage Trends -->
@@ -716,8 +772,14 @@
         am4core.ready(function() {
             // Apply amCharts animated theme
             am4core.useTheme(am4themes_animated);
+            
+            // Define consistent color variables
+            const minColor = "#00bfff";  // Light blue for min values
+            const maxColor = "#ff4444";  // Red for max values
+            
             // Global settings for dark theme
             am4core.options.autoSetClassName = true;
+            
             // --- Helper function for configuring axes ---
             function configureAxis(axis) {
                 axis.renderer.line.stroke = am4core.color("#888");
@@ -726,17 +788,18 @@
                 axis.renderer.grid.template.stroke = am4core.color("#888");
                 axis.renderer.grid.template.strokeOpacity = 0.3;
             }
-          
+         
             // --- Update last updated time ---
             function updateLastUpdatedTime() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 document.getElementById('lastUpdatedTime').textContent = timeString;
             }
-          
+         
             // Update time initially and set interval to update every minute
             updateLastUpdatedTime();
             setInterval(updateLastUpdatedTime, 60000);
+            
             // --- Realistic Battery Data with AC Active Power ---
             const batteryData = {
                 alias: "SSC-Smart-Logger-01",
@@ -761,10 +824,15 @@
                 energyYieldAbsorbed: 12500, // Total energy absorbed (charged)
                 energyYieldExport: 8900 // Total energy exported (discharged)
             };
+           
+            // Variables for voltage chart
+            let minHand;
+            let maxHand;
+           
             // --- Battery Mode Detection ---
             function determineBatteryMode() {
                 const activePower = batteryData.acActivePower;
-              
+             
                 if (activePower < -1) { // Negative power = charging
                     return {
                         mode: "charging",
@@ -794,10 +862,11 @@
                     };
                 }
             }
+            
             function updateModeIndicator() {
                 const modeInfo = determineBatteryMode();
                 const modeElement = document.getElementById('modeIndicator');
-              
+             
                 if (modeElement) {
                     modeElement.innerHTML = `
                         <div class="mode-icon ${modeInfo.mode}" style="color: ${modeInfo.color}">
@@ -808,14 +877,14 @@
                     `;
                 }
             }
-          
+         
             function updatePowerFlowDiagram() {
                 const modeInfo = determineBatteryMode();
                 const diagramElement = document.getElementById('powerFlowDiagram');
-              
+             
                 if (diagramElement) {
                     let sourceIcon, targetIcon, flowArrow, flowLabel;
-                  
+                 
                     if (modeInfo.mode === "charging") {
                         sourceIcon = "🏢"; // Grid icon
                         targetIcon = "🔋"; // Battery icon
@@ -832,7 +901,7 @@
                         flowArrow = "⇄"; // Bidirectional arrow for idle
                         flowLabel = "No Power Flow";
                     }
-                  
+                 
                     diagramElement.innerHTML = `
                         <div class="power-source">
                             <div class="power-source-icon">${sourceIcon}</div>
@@ -850,7 +919,7 @@
                     `;
                 }
             }
-          
+         
             // --- Update Alert Indicators ---
             function updateAlertIndicators() {
                 // SOC Alert - critical if below 20% or above 90%
@@ -862,7 +931,7 @@
                 } else {
                     socAlert.className = 'alert-indicator';
                 }
-              
+             
                 // Health Alert - critical if below 70%
                 const healthAlert = document.getElementById('healthAlert');
                 if (batteryData.health < 70) {
@@ -872,7 +941,7 @@
                 } else {
                     healthAlert.className = 'alert-indicator';
                 }
-              
+             
                 // Error Alert
                 const errorAlert = document.getElementById('errorAlert');
                 if (batteryData.warning === 2) {
@@ -882,7 +951,7 @@
                 } else {
                     errorAlert.className = 'alert-indicator';
                 }
-              
+             
                 // Temperature Alert - critical if above 45°C
                 const tempAlert = document.getElementById('tempAlert');
                 if (batteryData.tempMax > 45) {
@@ -892,7 +961,7 @@
                 } else {
                     tempAlert.className = 'alert-indicator';
                 }
-              
+             
                 // Voltage Alert - critical if outside safe range
                 const voltageAlert = document.getElementById('voltageAlert');
                 if (batteryData.voltageMin < 370 || batteryData.voltageMax > 430) {
@@ -902,7 +971,7 @@
                 } else {
                     voltageAlert.className = 'alert-indicator';
                 }
-              
+             
                 // Update system status
                 const systemStatus = document.getElementById('systemStatus');
                 if (batteryData.warning === 2 || batteryData.soc < 10 || batteryData.tempMax > 50) {
@@ -916,11 +985,12 @@
                     systemStatus.textContent = 'System Normal';
                 }
             }
-          
+         
             // Update mode indicator and alerts
             updateModeIndicator();
             updatePowerFlowDiagram();
             updateAlertIndicators();
+            
             // --- Dummy Historical Data for Trends ---
             function generateHistoricalData(count, startValue, fluctuation, min, max) {
                 let data = [];
@@ -937,11 +1007,12 @@
                 }
                 return data;
             }
+            
             const historicalVoltageMax = generateHistoricalData(24, batteryData.voltageMax, 3, 380, 420);
             const historicalVoltageMin = generateHistoricalData(24, batteryData.voltageMin, 3, 380, 420);
             const historicalTempMax = generateHistoricalData(24, batteryData.tempMax, 2, 20, 45);
             const historicalTempMin = generateHistoricalData(24, batteryData.tempMin, 2, 20, 45);
-          
+         
             // --- 2. Health Gauge Chart ---
             let healthChart = am4core.create("healthChart", am4charts.GaugeChart);
             healthChart.innerRadius = am4core.percent(80);
@@ -982,7 +1053,7 @@
                 healthLabel.verticalCenter = "bottom";
                 healthLabel.text = `${batteryData.health}%`;
                 healthLabel.fill = am4core.color("#fff");
-              
+             
                 let healthSubLabel = healthChart.radarContainer.createChild(am4core.Label);
                 healthSubLabel.isMeasured = false;
                 healthSubLabel.fontSize = "1em";
@@ -1000,6 +1071,7 @@
                     healthSubLabel.fill = am4core.color("#F44336");
                 }
             });
+            
             // --- Traffic Light for System Status ---
             function createTrafficLight() {
                 const statusDiv = document.getElementById('stateErrorChart');
@@ -1017,6 +1089,7 @@
                 `;
             }
             createTrafficLight();
+            
             // --- 4. Voltage Trends Chart ---
             let voltageTrendChart = am4core.create("voltageTrendChart", am4charts.XYChart);
             voltageTrendChart.data = historicalVoltageMax.map((item, i) => ({
@@ -1024,46 +1097,51 @@
                 voltageMax: item.value,
                 voltageMin: historicalVoltageMin[i].value
             }));
-          
+         
             let voltageDateAxis = voltageTrendChart.xAxes.push(new am4charts.DateAxis());
             configureAxis(voltageDateAxis);
             voltageDateAxis.renderer.labels.template.rotation = -45;
             voltageDateAxis.renderer.labels.template.horizontalCenter = "right";
             voltageDateAxis.renderer.labels.template.verticalCenter = "middle";
             voltageDateAxis.tooltipDateFormat = "MMM dd, HH:mm";
+            
             let voltageValueAxis = voltageTrendChart.yAxes.push(new am4charts.ValueAxis());
             voltageValueAxis.title.text = "Voltage (V)";
             voltageValueAxis.title.fill = am4core.color("#e0e0e0");
             configureAxis(voltageValueAxis);
             voltageValueAxis.min = 350;
             voltageValueAxis.max = 450;
+            
             let voltMaxSeries = voltageTrendChart.series.push(new am4charts.LineSeries());
             voltMaxSeries.dataFields.dateX = "date";
             voltMaxSeries.dataFields.valueY = "voltageMax";
             voltMaxSeries.name = "Voltage Max";
-            voltMaxSeries.stroke = am4core.color("#00bfff");
+            voltMaxSeries.stroke = am4core.color(maxColor); // Using consistent max color
             voltMaxSeries.strokeWidth = 3;
             voltMaxSeries.tooltipText = "{name}: [bold]{valueY}V[/]";
             voltMaxSeries.minBulletDistance = 15;
             voltMaxSeries.tensionX = 0.8;
-            voltMaxSeries.fill = am4core.color("#00bfff");
+            voltMaxSeries.fill = am4core.color(maxColor);
             voltMaxSeries.fillOpacity = 0.1;
+            
             let voltMinSeries = voltageTrendChart.series.push(new am4charts.LineSeries());
             voltMinSeries.dataFields.dateX = "date";
             voltMinSeries.dataFields.valueY = "voltageMin";
             voltMinSeries.name = "Voltage Min";
-            voltMinSeries.stroke = am4core.color("#ff9800");
+            voltMinSeries.stroke = am4core.color(minColor); // Using consistent min color
             voltMinSeries.strokeWidth = 3;
             voltMinSeries.tooltipText = "{name}: [bold]{valueY}V[/]";
             voltMinSeries.minBulletDistance = 15;
             voltMinSeries.tensionX = 0.8;
-            voltMinSeries.fill = am4core.color("#ff9800");
+            voltMinSeries.fill = am4core.color(minColor);
             voltMinSeries.fillOpacity = 0.1;
+            
             voltageTrendChart.legend = new am4charts.Legend();
             voltageTrendChart.legend.labels.template.fill = am4core.color("#e0e0e0");
             voltageTrendChart.legend.valueLabels.template.fill = am4core.color("#e0e0e0");
             voltageTrendChart.cursor = new am4charts.XYCursor();
             voltageTrendChart.cursor.xAxis = voltageDateAxis;
+            
             // --- 5. Temperature Trends Chart ---
             let temperatureTrendChart = am4core.create("temperatureTrendChart", am4charts.XYChart);
             temperatureTrendChart.data = historicalTempMax.map((item, i) => ({
@@ -1071,46 +1149,51 @@
                 tempMax: item.value,
                 tempMin: historicalTempMin[i].value
             }));
-          
+         
             let tempDateAxis = temperatureTrendChart.xAxes.push(new am4charts.DateAxis());
             configureAxis(tempDateAxis);
             tempDateAxis.renderer.labels.template.rotation = -45;
             tempDateAxis.renderer.labels.template.horizontalCenter = "right";
             tempDateAxis.renderer.labels.template.verticalCenter = "middle";
             tempDateAxis.tooltipDateFormat = "MMM dd, HH:mm";
+            
             let tempValueAxis = temperatureTrendChart.yAxes.push(new am4charts.ValueAxis());
             tempValueAxis.title.text = "Temperature (°C)";
             tempValueAxis.title.fill = am4core.color("#e0e0e0");
             configureAxis(tempValueAxis);
             tempValueAxis.min = 10;
             tempValueAxis.max = 50;
+            
             let tempMaxSeries = temperatureTrendChart.series.push(new am4charts.LineSeries());
             tempMaxSeries.dataFields.dateX = "date";
             tempMaxSeries.dataFields.valueY = "tempMax";
             tempMaxSeries.name = "Temp Max";
-            tempMaxSeries.stroke = am4core.color("#F44336");
+            tempMaxSeries.stroke = am4core.color(maxColor); // Using consistent max color
             tempMaxSeries.strokeWidth = 3;
             tempMaxSeries.tooltipText = "{name}: [bold]{valueY}°C[/]";
             tempMaxSeries.minBulletDistance = 15;
             tempMaxSeries.tensionX = 0.8;
-            tempMaxSeries.fill = am4core.color("#F44336");
+            tempMaxSeries.fill = am4core.color(maxColor);
             tempMaxSeries.fillOpacity = 0.1;
+            
             let tempMinSeries = temperatureTrendChart.series.push(new am4charts.LineSeries());
             tempMinSeries.dataFields.dateX = "date";
             tempMinSeries.dataFields.valueY = "tempMin";
             tempMinSeries.name = "Temp Min";
-            tempMinSeries.stroke = am4core.color("#4CAF50");
+            tempMinSeries.stroke = am4core.color(minColor); // Using consistent min color
             tempMinSeries.strokeWidth = 3;
             tempMinSeries.tooltipText = "{name}: [bold]{valueY}°C[/]";
             tempMinSeries.minBulletDistance = 15;
             tempMinSeries.tensionX = 0.8;
-            tempMinSeries.fill = am4core.color("#4CAF50");
+            tempMinSeries.fill = am4core.color(minColor);
             tempMinSeries.fillOpacity = 0.1;
+            
             temperatureTrendChart.legend = new am4charts.Legend();
             temperatureTrendChart.legend.labels.template.fill = am4core.color("#e0e0e0");
             temperatureTrendChart.legend.valueLabels.template.fill = am4core.color("#e0e0e0");
             temperatureTrendChart.cursor = new am4charts.XYCursor();
             temperatureTrendChart.cursor.xAxis = tempDateAxis;
+            
             // --- 6. Max Charge/Discharge Power Chart ---
             let powerChart = am4core.create("powerChart", am4charts.XYChart);
             powerChart.data = [{
@@ -1118,14 +1201,17 @@
                 charge: batteryData.maxChargePower,
                 discharge: batteryData.maxDischargePower
             }];
+            
             let powerCategoryAxis = powerChart.xAxes.push(new am4charts.CategoryAxis());
             powerCategoryAxis.dataFields.category = "category";
             powerCategoryAxis.renderer.grid.template.disabled = true;
             powerCategoryAxis.renderer.labels.template.disabled = true;
+            
             let powerValueAxis = powerChart.yAxes.push(new am4charts.ValueAxis());
             powerValueAxis.min = 0;
             powerValueAxis.max = Math.max(batteryData.maxChargePower, batteryData.maxDischargePower) * 1.2;
             configureAxis(powerValueAxis);
+            
             let chargePowerSeries = powerChart.series.push(new am4charts.ColumnSeries());
             chargePowerSeries.dataFields.valueY = "charge";
             chargePowerSeries.dataFields.categoryX = "category";
@@ -1141,6 +1227,7 @@
             chargePowerSeries.columns.template.width = am4core.percent(35);
             chargePowerSeries.columns.template.dx = -10;
             chargePowerSeries.fillOpacity = 0.3;
+            
             let dischargePowerSeries = powerChart.series.push(new am4charts.ColumnSeries());
             dischargePowerSeries.dataFields.valueY = "discharge";
             dischargePowerSeries.dataFields.categoryX = "category";
@@ -1155,11 +1242,14 @@
             dischargePowerSeries.columns.template.width = am4core.percent(35);
             dischargePowerSeries.columns.template.dx = -10;
             dischargePowerSeries.fillOpacity = 0.3;
+            
             powerChart.legend = new am4charts.Legend();
             powerChart.legend.labels.template.fill = am4core.color("#e0e0e0");
             powerChart.legend.valueLabels.template.fill = am4core.color("#e0e0e0");
+            
             // --- AC Active/Reactive Power ---
             let acPowerChart = am4core.create("acPowerChart", am4charts.XYChart);
+            
             function generateACPowerData(count) {
                 let data = [];
                 let firstDate = new Date();
@@ -1175,16 +1265,18 @@
                 }
                 return data;
             }
+            
             acPowerChart.data = generateACPowerData(30);
-          
+         
             let acDateAxis = acPowerChart.xAxes.push(new am4charts.DateAxis());
             configureAxis(acDateAxis);
             acDateAxis.tooltipDateFormat = "HH:mm";
-          
+         
             let acPowerValueAxis = acPowerChart.yAxes.push(new am4charts.ValueAxis());
             configureAxis(acPowerValueAxis);
             acPowerValueAxis.title.text = "Power (kW/kVAR)";
             acPowerValueAxis.title.fill = am4core.color("#e0e0e0");
+            
             function createACPowerSeries(field, name, color) {
                 let series = acPowerChart.series.push(new am4charts.LineSeries());
                 series.dataFields.valueY = field;
@@ -1199,13 +1291,16 @@
                 series.fillOpacity = 0.1;
                 return series;
             }
+            
             let activeSeries = createACPowerSeries("active", "Active Power", "#00bfff");
             let reactiveSeries = createACPowerSeries("reactive", "Reactive Power", "#ff9800");
+            
             acPowerChart.legend = new am4charts.Legend();
             acPowerChart.legend.labels.template.fill = am4core.color("#e0e0e0");
             acPowerChart.legend.valueLabels.template.fill = am4core.color("#e0e0e0");
             acPowerChart.cursor = new am4charts.XYCursor();
             acPowerChart.cursor.xAxis = acDateAxis;
+            
             // --- AC Power Gauge Chart ---
             function createACPowerGauge(divId, activeValue, reactiveValue, minRange, maxRange) {
                 let chart = am4core.create(divId, am4charts.GaugeChart);
@@ -1216,18 +1311,21 @@
                 axis.strictMinMax = true;
                 configureAxis(axis);
                 axis.renderer.labels.template.radius = am4core.percent(10);
+                
                 let activeHand = chart.hands.push(new am4charts.ClockHand());
                 activeHand.value = activeValue;
                 activeHand.pin.radius = 10;
                 activeHand.fill = am4core.color("#00bfff");
                 activeHand.stroke = am4core.color("#00bfff");
                 activeHand.radius = am4core.percent(70);
+                
                 let reactiveHand = chart.hands.push(new am4charts.ClockHand());
                 reactiveHand.value = reactiveValue;
                 reactiveHand.pin.radius = 10;
                 reactiveHand.fill = am4core.color("#ff9800");
                 reactiveHand.stroke = am4core.color("#ff9800");
                 reactiveHand.radius = am4core.percent(60); // Slightly shorter for distinction
+                
                 chart.events.on("ready", function() {
                     let activeLabel = chart.radarContainer.createChild(am4core.Label);
                     activeLabel.text = `Active: ${activeValue} kW`;
@@ -1236,6 +1334,7 @@
                     activeLabel.horizontalCenter = "middle";
                     activeLabel.verticalCenter = "bottom";
                     activeLabel.dy = 30;
+                    
                     let reactiveLabel = chart.radarContainer.createChild(am4core.Label);
                     reactiveLabel.text = `Reactive: ${reactiveValue} kVAR`;
                     reactiveLabel.fontSize = "1em";
@@ -1245,7 +1344,9 @@
                     reactiveLabel.dy = 45;
                 });
             }
+            
             createACPowerGauge("acPowerGaugeChart", batteryData.acActivePower, batteryData.acReactivePower, -100, 100);
+            
             // Update energy values, battery fill, and SOC label
             function updateEnergyAndSOC() {
                 document.getElementById('chargeEnergyValue').textContent = batteryData.availableChargeEnergy + ' kWh';
@@ -1254,42 +1355,141 @@
                 document.getElementById('socLabel').textContent = batteryData.soc + '%';
             }
             updateEnergyAndSOC();
-
+            
             // --- Update Thermometer for Temperature ---
             function updateTemperatureVisualization() {
-    const minTemp = 0;
-    const maxTemp = 60;
-    const tempRange = maxTemp - minTemp;
-
-    const minPosition = ((batteryData.tempMin - minTemp) / tempRange) * 100;
-    const maxPosition = ((batteryData.tempMax - minTemp) / tempRange) * 100;
-
-    // Update marker positions (from bottom)
-    document.getElementById('tempMinMarker').style.bottom = `${minPosition}%`;
-    document.getElementById('tempMaxMarker').style.bottom = `${maxPosition}%`;
-
-    // Update value boxes
-    document.getElementById('tempMinValue').textContent = `${Math.round(batteryData.tempMin)}°C`;
-    document.getElementById('tempMaxValue').textContent = `${Math.round(batteryData.tempMax)}°C`;
-}
-            updateTemperatureVisualization();
-
-            // --- Update Voltmeter for Voltage ---
-            function updateVoltmeter() {
-                const minVoltageRange = 350;
-                const maxVoltageRange = 450;
-                const range = maxVoltageRange - minVoltageRange;
-
-                const minAngle = ((batteryData.voltageMin - minVoltageRange) / range) * 180 - 90;
-                const maxAngle = ((batteryData.voltageMax - minVoltageRange) / range) * 180 - 90;
-
-                document.getElementById('voltageMinNeedle').style.transform = `rotate(${minAngle}deg)`;
-                document.getElementById('voltageMaxNeedle').style.transform = `rotate(${maxAngle}deg)`;
-                document.getElementById('voltageMinLabel').textContent = `Min: ${batteryData.voltageMin}V`;
-                document.getElementById('voltageMaxLabel').textContent = `Max: ${batteryData.voltageMax}V`;
+                const minTemp = 0;
+                const maxTemp = 60;
+                const tempRange = maxTemp - minTemp;
+                const minPosition = ((batteryData.tempMin - minTemp) / tempRange) * 100;
+                const maxPosition = ((batteryData.tempMax - minTemp) / tempRange) * 100;
+                // Update marker positions (from bottom)
+                document.getElementById('tempMinMarker').style.bottom = `${minPosition}%`;
+                document.getElementById('tempMaxMarker').style.bottom = `${maxPosition}%`;
+                // Update value boxes
+                document.getElementById('tempMinValue').textContent = `${Math.round(batteryData.tempMin)}°C`;
+                document.getElementById('tempMaxValue').textContent = `${Math.round(batteryData.tempMax)}°C`;
             }
-            updateVoltmeter();
-          
+            updateTemperatureVisualization();
+            
+            // --- Create Voltage Chart ---
+            function createVoltageChart() {
+                let chart = am4core.create("voltageChart", am4charts.GaugeChart);
+                chart.hiddenState.properties.opacity = 0;
+                chart.startAngle = -135;
+                chart.endAngle = 135;
+                chart.innerRadius = -15; // Adjust for semicircle look
+                
+                let axis = chart.xAxes.push(new am4charts.ValueAxis());
+                axis.min = 0;
+                axis.max = 450;
+                axis.strictMinMax = true;
+                axis.renderer.grid.template.disabled = true;
+                axis.renderer.labels.template.disabled = true;
+                axis.renderer.ticks.template.disabled = false;
+                axis.renderer.ticks.template.strokeOpacity = 1;
+                axis.renderer.ticks.template.length = 10;
+                axis.renderer.ticks.template.stroke = am4core.color("#fff");
+                axis.renderer.line.strokeOpacity = 0;
+                axis.renderer.minLabelPosition = 0;
+                axis.renderer.maxLabelPosition = 1;
+                
+                // Add custom major labels and ticks
+                for (let i = 0; i <= 400; i += 100) {
+                    let range = axis.axisRanges.create();
+                    range.value = i;
+                    range.label.text = i.toString();
+                    range.label.fill = am4core.color("#fff");
+                    range.label.fontSize = 15;
+                    range.label.radius = 30;
+                    range.tick.length = 15;
+                    range.tick.strokeOpacity = 1;
+                    range.tick.stroke = am4core.color("#fff");
+                }
+                
+                // Add 450 label and tick
+                let range450 = axis.axisRanges.create();
+                range450.value = 450;
+                range450.label.text = "450";
+                range450.label.fill = am4core.color("#fff");
+                range450.label.fontSize = 15;
+                range450.label.radius = 30;
+                range450.tick.length = 15;
+                range450.tick.strokeOpacity = 1;
+                range450.tick.stroke = am4core.color("#fff");
+                
+                // Add minor ticks
+                for (let i = 0; i <= 450; i += 20) {
+                    if (i % 100 !== 0) {
+                        let range = axis.axisRanges.create();
+                        range.value = i;
+                        range.label.disabled = true;
+                        range.tick.length = 10;
+                        range.tick.strokeOpacity = 1;
+                        range.tick.stroke = am4core.color("#fff");
+                    }
+                }
+                
+                minHand = chart.hands.push(new am4charts.ClockHand());
+                minHand.axis = axis;
+                minHand.innerRadius = am4core.percent(0);
+                minHand.startWidth = 8;
+                minHand.pin.disabled = true;
+                minHand.fill = am4core.color(minColor); // Using consistent min color
+                minHand.stroke = am4core.color(minColor); // Using consistent min color
+                minHand.value = batteryData.voltageMin;
+                
+                maxHand = chart.hands.push(new am4charts.ClockHand());
+                maxHand.axis = axis;
+                maxHand.innerRadius = am4core.percent(0);
+                maxHand.startWidth = 8;
+                maxHand.pin.disabled = true;
+                maxHand.fill = am4core.color(maxColor); // Using consistent max color
+                maxHand.stroke = am4core.color(maxColor); // Using consistent max color
+                maxHand.value = batteryData.voltageMax;
+                
+                // Center circle
+                let center = chart.radarContainer.createChild(am4core.Circle);
+                center.radius = 10;
+                center.fill = am4core.color("#222");
+                center.stroke = am4core.color("#888");
+                center.strokeWidth = 4;
+                center.align = "center";
+                center.valign = "middle";
+                center.dy = 60; // Adjust position for semicircle
+            }
+           
+            // --- Update Voltage Chart ---
+            function updateVoltageChart() {
+                minHand.showValue(batteryData.voltageMin, 1000, am4core.ease.cubicOut);
+                maxHand.showValue(batteryData.voltageMax, 1000, am4core.ease.cubicOut);
+                // Update displayed values
+                document.getElementById('voltageMinValue').textContent = `${Math.round(batteryData.voltageMin)}V`;
+                document.getElementById('voltageMaxValue').textContent = `${Math.round(batteryData.voltageMax)}V`;
+               
+                // Update status
+                const voltageStatus = document.getElementById('voltageStatus');
+                const voltageAlert = document.getElementById('voltageAlert');
+              
+                if (batteryData.voltageMin < 370 || batteryData.voltageMax > 430) {
+                    voltageStatus.className = 'voltage-status critical';
+                    voltageStatus.textContent = 'Voltage Critical';
+                    voltageAlert.className = 'alert-indicator alert-critical';
+                } else if (batteryData.voltageMin < 380 || batteryData.voltageMax > 420) {
+                    voltageStatus.className = 'voltage-status warning';
+                    voltageStatus.textContent = 'Voltage Warning';
+                    voltageAlert.className = 'alert-indicator alert-warning';
+                } else {
+                    voltageStatus.className = 'voltage-status';
+                    voltageStatus.textContent = 'Voltage Normal';
+                    voltageAlert.className = 'alert-indicator';
+                }
+            }
+           
+            // Initialize voltage chart
+            createVoltageChart();
+            updateVoltageChart();
+         
             // Simulate data updates every 5 seconds for demo
             setInterval(function() {
                 // Simulate realistic battery behavior
@@ -1303,11 +1503,11 @@
                     // Small fluctuations in current mode
                     batteryData.acActivePower += (Math.random() - 0.5) * 5;
                 }
-              
+             
                 // Update SOC based on power flow
                 const socChange = batteryData.acActivePower / 1000; // Small SOC change
                 batteryData.soc = Math.max(0, Math.min(100, batteryData.soc + socChange));
-              
+             
                 // Update available energy based on mode
                 if (batteryData.acActivePower < 0) {
                     // Charging: decrease available charge, increase available discharge
@@ -1318,16 +1518,33 @@
                     batteryData.availableChargeEnergy = Math.min(batteryData.totalCapacity, batteryData.availableChargeEnergy - batteryData.acActivePower / 10);
                     batteryData.availableDischargeEnergy = Math.max(0, batteryData.availableDischargeEnergy + batteryData.acActivePower / 10);
                 }
+             
+                // Small fluctuations in other values
+                batteryData.voltageMin += (Math.random() - 0.5) * 1.5;
+                batteryData.voltageMax += (Math.random() - 0.5) * 1.5;
+                batteryData.tempMin += (Math.random() - 0.5);
+                batteryData.tempMax += (Math.random() - 0.5);
+                batteryData.health += (Math.random() - 0.5) * 0.1;
               
+                // Ensure values stay within reasonable bounds
+                batteryData.voltageMin = Math.max(380, Math.min(420, batteryData.voltageMin));
+                batteryData.voltageMax = Math.max(batteryData.voltageMin + 5, Math.min(430, batteryData.voltageMax));
+                batteryData.tempMin = Math.max(20, Math.min(40, batteryData.tempMin));
+                batteryData.tempMax = Math.max(batteryData.tempMin + 5, Math.min(50, batteryData.tempMax));
+                batteryData.health = Math.max(70, Math.min(100, batteryData.health));
+             
                 // Update mode indicator and alerts
                 updateModeIndicator();
                 updatePowerFlowDiagram();
                 updateAlertIndicators();
+               
                 // Update energy values, battery fill, and SOC
                 updateEnergyAndSOC();
+               
                 // Update thermometer and voltmeter
-                updateThermometer();
-                updateVoltmeter();
+                updateTemperatureVisualization();
+                updateVoltageChart();
+               
                 // Update last updated time
                 updateLastUpdatedTime();
             }, 5000); // Update every 5 seconds for demo

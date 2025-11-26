@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>নির্বাচনী ক্যাম্পেইন ড্যাশবোর্ড - নরসিংদী-২</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    #map { height: 400px; width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-top: 10px; }
+    canvas { max-width: 100%; height: auto; }
+    .popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; text-align: center; max-width: 80%; }
+    .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    select { min-width: 150px; }
+    .sources { background: #f3f4f6; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
+    .sources a { color: #3b82f6; text-decoration: underline; font-weight: 500; }
+    .analysis-section { background: #f9fafb; padding: 20px; border-radius: 8px; margin-top: 20px; }
+    .tab-button { padding: 8px 16px; border: none; background: #e5e7eb; cursor: pointer; border-radius: 4px; }
+    .tab-button.active { background: #3b82f6; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .priority-high { background-color: #fee2e2; border-left: 4px solid #ef4444; }
+    .priority-medium { background-color: #fef3c7; border-left: 4px solid #f59e0b; }
+    .priority-low { background-color: #dcfce7; border-left: 4px solid #16a34a; }
+    .campaign-tip { background: #dbeafe; padding: 12px; border-radius: 8px; margin: 8px 0; }
+    .influencer-card { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 8px 0; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen p-4 font-sans">
+  <div class="max-w-7xl mx-auto">
+    <!-- হেডার -->
+    <header class="text-center mb-8 bg-white p-6 rounded-xl shadow-lg">
+      <h1 class="text-3xl md:text-4xl font-bold text-blue-800">নির্বাচনী ক্যাম্পেইন ড্যাশবোর্ড - নরসিংদী-২</h1>
+      <p class="text-gray-600 mt-2">প্রার্থীদের জন্য সম্পূর্ণ গাইড - ভোটার ডেটা, কৌশল, এবং রিয়েল-টাইম এনালিটিক্স</p>
+      <div class="mt-4 bg-blue-50 p-4 rounded-lg">
+        <div class="flex flex-wrap justify-center gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-700">৪,০৮,০০০+</div>
+            <div class="text-gray-600">মোট ভোটার</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-600">৭</div>
+            <div class="text-gray-600">ইউনিয়ন</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-600">৪৫%</div>
+            <div class="text-gray-600">যুব ভোটার (১৮-৩৫)</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-red-600">৫১%</div>
+            <div class="text-gray-600">মহিলা ভোটার</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ফিল্টার -->
+    <div class="mb-6 flex flex-wrap justify-center gap-3 bg-white p-4 rounded-xl shadow-lg">
+      <select id="upazilaFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="narsingdi2">নরসিংদী-২</option>
+      </select>
+      <select id="unionFilter" class="px-4 py-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">সকল ইউনিয়ন (৭টি)</option>
+      </select>
+      <button onclick="downloadPDF()" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition">
+        <i class="fas fa-download mr-2"></i>PDF ডাউনলোড
+      </button>
+      <button onclick="showCampaignTips()" class="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition">
+        <i class="fas fa-lightbulb mr-2"></i>ক্যাম্পেইন টিপস
+      </button>
+    </div>
+
+    <!-- চার্ট গ্রিড -->
+    <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">লিঙ্গ অনুপাত</h3>
+        <canvas id="genderChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">বয়স গ্রুপ</h3>
+        <canvas id="ageChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">ধর্মীয় গঠন</h3>
+        <canvas id="religionChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">শিক্ষা স্তর</h3>
+        <canvas id="educationChart"></canvas>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">পেশা বিতরণ</h3>
+        <canvas id="occupationChart"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">ভোটার টার্নআউট ইতিহাস</h3>
+        <canvas id="turnoutChart"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">রাজনৈতিক সমর্থন</h3>
+        <canvas id="supportChart"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-3 text-center">প্রধান ইস্যু</h3>
+        <canvas id="issuesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- ইন্টারঅ্যাকটিভ ম্যাপ -->
+    <div class="bg-white p-5 rounded-xl shadow-lg mb-6">
+      <h3 class="text-lg font-semibold mb-3 text-center">ইউনিয়ন ম্যাপ (ক্লিক করুন ডেটা দেখার জন্য)</h3>
+      <div id="map"></div>
+    </div>
+
+    <!-- ক্যাম্পেইন স্ট্র্যাটেজি সেকশন -->
+    <div class="analysis-section">
+      <h2 class="text-2xl font-bold mb-4">ক্যাম্পেইন কৌশল ও কর্মপরিকল্পনা</h2>
+      
+      <!-- ট্যাব নেভিগেশন -->
+      <div class="flex gap-2 mb-4 flex-wrap">
+        <button class="tab-button active" onclick="openTab('strategy')"><i class="fas fa-chess-board mr-2"></i>ক্যাম্পেইন কৌশল</button>
+        <button class="tab-button" onclick="openTab('schedule')"><i class="fas fa-calendar-alt mr-2"></i>কর্মসূচী</button>
+        <button class="tab-button" onclick="openTab('influencers')"><i class="fas fa-users mr-2"></i>প্রভাবশালী ব্যক্তি</button>
+        <button class="tab-button" onclick="openTab('resources')"><i class="fas fa-tools mr-2"></i>ক্যাম্পেইন রিসোর্স</button>
+        <button class="tab-button" onclick="openTab('opposition')"><i class="fas fa-user-shield mr-2"></i>প্রতিদ্বন্দ্বী বিশ্লেষণ</button>
+      </div>
+
+      <!-- ক্যাম্পেইন কৌশল -->
+      <div id="strategy" class="tab-content active">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- ইউনিয়ন ভিত্তিক কৌশল -->
+          <div class="bg-white p-4 rounded-lg shadow">
+            <h3 class="text-xl font-bold mb-3 text-blue-700">ইউনিয়ন ভিত্তিক কৌশল</h3>
+            
+            <div class="priority-high p-3 mb-3">
+              <h4 class="font-semibold">সুইং এলাকা (উচ্চ অগ্রাধিকার)</h4>
+              <p class="text-sm">আমদিয়া, মেহেরপাড়া - এখানে ফোকাস বাড়ানো প্রয়োজন</p>
+              <ul class="list-disc list-inside text-sm mt-2">
+                <li>স্থানীয় নেতাদের সাথে সরাসরি বৈঠক</li>
+                <li>যুবক ও মহিলাদের জন্য বিশেষ কর্মসূচী</li>
+                <li>স্থানীয় ইস্যু সমাধানের প্রতিশ্রুতি</li>
+              </ul>
+            </div>
+            
+            <div class="priority-medium p-3 mb-3">
+              <h4 class="font-semibold">মধ্যম অগ্রাধিকার</h4>
+              <p class="text-sm">জিনার্দী, ডাঙ্গা - শক্তিশালী অবস্থান বজায় রাখুন</p>
+              <ul class="list-disc list-inside text-sm mt-2">
+                <li>নিয়মিত গণসংযোগ অব্যাহত রাখুন</li>
+                <li>উন্নয়ন কাজের অগ্রগতি প্রচার করুন</li>
+              </ul>
+            </div>
+            
+            <div class="priority-low p-3">
+              <h4 class="font-semibold">শক্ত ঘাঁটি (নিম্ন অগ্রাধিকার)</h4>
+              <p class="text-sm">গজারিয়া, চরসিন্দুর, পাঁচদোনা - রক্ষণাবেক্ষণ কৌশল</p>
+              <ul class="list-disc list-inside text-sm mt-2">
+                <li>স্থানীয় কর্মীদের মাধ্যমে কাজ চালিয়ে যান</li>
+                <li>নিয়মিত যোগাযোগ রাখুন</li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- ভোটার গ্রুপ ভিত্তিক কৌশল -->
+          <div class="bg-white p-4 rounded-lg shadow">
+            <h3 class="text-xl font-bold mb-3 text-green-700">ভোটার গ্রুপ ভিত্তিক কৌশল</h3>
+            
+            <div class="campaign-tip">
+              <h4 class="font-semibold">যুব ভোটার (১৮-৩৫ বছর) - ৪৫%</h4>
+              <p class="text-sm">চাকরি, শিক্ষা ও বিনোদন ইস্যুতে ফোকাস করুন</p>
+              <ul class="list-disc list-inside text-sm mt-1">
+                <li>সোশ্যাল মিডিয়া ক্যাম্পেইন জোরদার করুন</li>
+                <li>যুব নিয়োগ ও শিক্ষা সংস্কার প্রতিশ্রুতি দিন</li>
+                <li>ক্রীড়া ও সাংস্কৃতিক ইভেন্ট আয়োজন করুন</li>
+              </ul>
+            </div>
+            
+            <div class="campaign-tip">
+              <h4 class="font-semibold">মহিলা ভোটার - ৫১%</h4>
+              <p class="text-sm">নারী নিরাপত্তা, শিক্ষা ও স্বাস্থ্য ইস্যু</p>
+              <ul class="list-disc list-inside text-sm mt-1">
+                <li>মহিলা সমাবেশ ও আলোচনা সভা আয়োজন করুন</li>
+                <li>মহিলা শিক্ষা ও স্বাস্থ্য সেবা উন্নয়নের প্রতিশ্রুতি</li>
+                <li>মহিলা উদ্যোক্তাদের জন্য সহায়তা ঘোষণা করুন</li>
+              </ul>
+            </div>
+            
+            <div class="campaign-tip">
+              <h4 class="font-semibold">কৃষক ভোটার - ৬০%</h4>
+              <p class="text-sm">কৃষি সাবসিডি, সেচ ও বিপণন সমস্যা</p>
+              <ul class="list-disc list-inside text-sm mt-1">
+                <li>কৃষি উপকরণ সাবসিডি বৃদ্ধির প্রতিশ্রুতি</li>
+                <li>ফসলের ন্যায্য মূল্য নিশ্চিত করার পরিকল্পনা</li>
+                <li>কৃষি বিপণন ব্যবস্থা উন্নয়ন</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- কর্মসূচী -->
+      <div id="schedule" class="tab-content">
+        <h3 class="text-xl font-bold mb-3">১৫ দিনের ক্যাম্পেইন কর্মসূচী</h3>
+        <div class="bg-white p-4 rounded-lg shadow">
+          <table class="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border border-gray-300 p-2">তারিখ</th>
+                <th class="border border-gray-300 p-2">ইউনিয়ন</th>
+                <th class="border border-gray-300 p-2">কার্যক্রম</th>
+                <th class="border border-gray-300 p-2">লক্ষ্য গ্রুপ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-gray-300 p-2">দিন ১-২</td>
+                <td class="border border-gray-300 p-2">আমদিয়া, মেহেরপাড়া</td>
+                <td class="border border-gray-300 p-2">দরজা-দরজা প্রচারণা, স্থানীয় নেতাদের সাথে বৈঠক</td>
+                <td class="border border-gray-300 p-2">সকল ভোটার, স্থানীয় নেতা</td>
+              </tr>
+              <tr>
+                <td class="border border-gray-300 p-2">দিন ৩-৪</td>
+                <td class="border border-gray-300 p-2">জিনার্দী, ডাঙ্গা</td>
+                <td class="border border-gray-300 p-2">যুব সমাবেশ, সোশ্যাল মিডিয়া লাইভ</td>
+                <td class="border border-gray-300 p-2">যুবক, শিক্ষিত ভোটার</td>
+              </tr>
+              <tr>
+                <td class="border border-gray-300 p-2">দিন ৫-৬</td>
+                <td class="border border-gray-300 p-2">গজারিয়া, চরসিন্দুর</td>
+                <td class="border border-gray-300 p-2">কৃষক সমাবেশ, মহিলা সম্মেলন</td>
+                <td class="border border-gray-300 p-2">কৃষক, মহিলা ভোটার</td>
+              </tr>
+              <tr>
+                <td class="border border-gray-300 p-2">দিন ৭-৮</td>
+                <td class="border border-gray-300 p-2">পাঁচদোনা</td>
+                <td class="border border-gray-300 p-2">বৃহৎ গণসমাবেশ, র্যালি</td>
+                <td class="border border-gray-300 p-2">সকল ভোটার</td>
+              </tr>
+              <tr>
+                <td class="border border-gray-300 p-2">দিন ৯-১৫</td>
+                <td class="border border-gray-300 p-2">সকল ইউনিয়ন</td>
+                <td class="border border-gray-300 p-2">ফলো-আপ, সমস্যা সমাধান, শেষ মুহূর্তের প্রচারণা</td>
+                <td class="border border-gray-300 p-2">সকল ভোটার, সংশয়ী ভোটার</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- প্রভাবশালী ব্যক্তি -->
+      <div id="influencers" class="tab-content">
+        <h3 class="text-xl font-bold mb-3">প্রভাবশালী ব্যক্তিদের তালিকা</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <div class="influencer-card">
+            <h4 class="font-semibold text-blue-700">স্থানীয় নেতা</h4>
+            <p class="text-sm">ইউনিয়ন চেয়ারম্যান, সদস্য ও রাজনৈতিক কর্মী</p>
+            <ul class="list-disc list-inside text-sm mt-2">
+              <li>আমদিয়া - চেয়ারম্যান আব্দুল করিম (AL)</li>
+              <li>মেহেরপাড়া - চেয়ারম্যান নুরুল ইসলাম (AL)</li>
+              <li>গজারিয়া - চেয়ারম্যান রফিকুল ইসলাম (AL)</li>
+              <li>পাঁচদোনা - চেয়ারম্যান শামীম আহমেদ (AL)</li>
+            </ul>
+          </div>
+          
+          <div class="influencer-card">
+            <h4 class="font-semibold text-green-700">ধর্মীয় নেতা</h4>
+            <p class="text-sm">মসজিদের ইমাম, মাদ্রাসা শিক্ষক, হিন্দু সম্প্রদায় নেতা</p>
+            <ul class="list-disc list-inside text-sm mt-2">
+              <li>মুফতি আব্দুল্লাহ (জিনার্দী কেন্দ্রীয় মসজিদ)</li>
+              <li>মাওলানা ইদ্রিস (গজারিয়া জামে মসজিদ)</li>
+              <li>স্বামী দেবেন্দ্রনাথ (আমদিয়া মন্দির)</li>
+            </ul>
+          </div>
+          
+          <div class="influencer-card">
+            <h4 class="font-semibold text-purple-700">শিক্ষা প্রতিষ্ঠান</h4>
+            <p class="text-sm">কলেজ প্রিন্সিপাল, স্কুল প্রধান শিক্ষক</p>
+            <ul class="list-disc list-inside text-sm mt-2">
+              <li>ড. মোঃ আলীমুজ্জামান (পলাশ ডিগ্রি কলেজ)</li>
+              <li>সেলিনা আক্তার (আমদিয়া উচ্চবিদ্যালয়)</li>
+              <li>অরুণ চন্দ্র (গজারিয়া স্কুল)</li>
+            </ul>
+          </div>
+          
+          <div class="influencer-card">
+            <h4 class="font-semibold text-red-700">ব্যবসায়ী ও কন্ট্রাক্টর</h4>
+            <p class="text-sm">স্থানীয় ব্যবসায়ী, উন্নয়ন কাজের কন্ট্রাক্টর</p>
+            <ul class="list-disc list-inside text-sm mt-2">
+              <li>শফিকুল আলম (কৃষি ব্যবসায়ী)</li>
+              <li>নূর মোহাম্মদ (কন্ট্রাক্টর)</li>
+              <li>রহিম উদ্দিন (ব্যবসায়ী সমিতি সভাপতি)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ক্যাম্পেইন রিসোর্স -->
+      <div id="resources" class="tab-content">
+        <h3 class="text-xl font-bold mb-3">ক্যাম্পেইন রিসোর্স ও বাজেট</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <div class="bg-white p-4 rounded-lg shadow">
+            <h4 class="font-semibold text-blue-700 mb-3">প্রচার সামগ্রী</h4>
+            <ul class="list-disc list-inside">
+              <li>পোস্টার: ১০,০০০টি (ইউনিয়ন অনুযায়ী বন্টন)</li>
+              <li>লিফলেট: ৫০,০০০টি (দরজা-দরজা বিতরণ)</li>
+              <li>ব্যানার: ২০০টি (মুখ্য সড়ক ও সমাবেশ স্থল)</li>
+              <li>স্টিকার: ২০,০০০টি (গাড়ি, দোকান)</li>
+              <li>ক্যাপ/টি-শার্ট: ২,০০০টি (কর্মী ও স্বেচ্ছাসেবক)</li>
+            </ul>
+          </div>
+          
+          <div class="bg-white p-4 rounded-lg shadow">
+            <h4 class="font-semibold text-green-700 mb-3">মানবসম্পদ</h4>
+            <ul class="list-disc list-inside">
+              <li>কর্মী: ২০০ জন (ইউনিয়ন ভিত্তিক)</li>
+              <li>স্বেচ্ছাসেবক: ৫০০ জন (যুবক ও শিক্ষার্থী)</li>
+              <li>সোশ্যাল মিডিয়া টিম: ১০ জন</li>
+              <li>মহিলা কর্মী: ১০০ জন</li>
+              <li>যানবাহন চালক: ২০ জন</li>
+            </ul>
+          </div>
+          
+          <div class="bg-white p-4 rounded-lg shadow">
+            <h4 class="font-semibold text-purple-700 mb-3">যানবাহন ও লজিস্টিক</h4>
+            <ul class="list-disc list-inside">
+              <li>মাইক্রোবাস: ৫টি (কর্মী পরিবহন)</li>
+              <li>মোটরসাইকেল: ২০টি (দ্রুত চলাচল)</li>
+              <li>সাউন্ড সিস্টেম: ৩ সেট</li>
+              <li>মঞ্চ ও স্টেজ: ২ সেট</li>
+              <li>ক্যাম্পেইন অফিস: ৭টি (প্রতি ইউনিয়নে ১টি)</li>
+            </ul>
+          </div>
+          
+          <div class="bg-white p-4 rounded-lg shadow">
+            <h4 class="font-semibold text-red-700 mb-3">বাজেট বরাদ্দ (আনুমানিক)</h4>
+            <ul class="list-disc list-inside">
+              <li>প্রচার সামগ্রী: ৫ লক্ষ টাকা</li>
+              <li>সমাবেশ ও সভা: ৩ লক্ষ টাকা</li>
+              <li>পরিবহন ও জ্বালানি: ২ লক্ষ টাকা</li>
+              <li>কর্মী ভাতা ও খাবার: ২.৫ লক্ষ টাকা</li>
+              <li>জরুরি বরাদ্দ: ১.৫ লক্ষ টাকা</li>
+              <li class="font-semibold mt-2">মোট: ১৪ লক্ষ টাকা</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- প্রতিদ্বন্দ্বী বিশ্লেষণ -->
+      <div id="opposition" class="tab-content">
+        <h3 class="text-xl font-bold mb-3">প্রতিদ্বন্দ্বী দল ও প্রার্থী বিশ্লেষণ</h3>
+        <div class="bg-white p-4 rounded-lg shadow">
+          
+          <div class="mb-6 p-4 border-l-4 border-red-500 bg-red-50">
+            <h4 class="font-semibold text-lg">আওয়ামী লীগ (বর্তমান শাসক দল)</h4>
+            <p class="text-sm mt-2"><strong>শক্তি:</strong> সংগঠিত কাঠামো, উন্নয়ন কাজের সুবিধা, আর্থিক সম্পদ</p>
+            <p class="text-sm"><strong>দুর্বলতা:</strong> মূল্যস্ফীতি, বেকারত্ব, কিছু স্থানীয় নেতার ব্যাপকতা</p>
+            <p class="text-sm"><strong>কৌশল:</strong> উন্নয়নের ছবি তুলে ধরা, স্থানীয় নেতাদের একত্রিত করা</p>
+          </div>
+          
+          <div class="mb-6 p-4 border-l-4 border-green-500 bg-green-50">
+            <h4 class="font-semibold text-lg">বিএনপি ও শরিক দল</h4>
+            <p class="text-sm mt-2"><strong>শক্তি:</strong> সরকারবিরোধী ভোট, অসন্তুষ্ট যুবক, কিছু প্রভাবশালী স্থানীয় নেতা</p>
+            <p class="text-sm"><strong>দুর্বলতা:</strong> সংগঠনের দুর্বলতা, নির্বাচন বর্জনের ইতিহাস, আর্থিক সংকট</p>
+            <p class="text-sm"><strong>কৌশল:</strong> সরকারের ব্যর্থতা তুলে ধরা, যুবক ও অসন্তুষ্ট ভোটার লক্ষ্য করা</p>
+          </div>
+          
+          <div class="p-4 border-l-4 border-yellow-500 bg-yellow-50">
+            <h4 class="font-semibold text-lg">স্বতন্ত্র ও ছোট দল</h4>
+            <p class="text-sm mt-2"><strong>শক্তি:</strong> স্থানীয় ইস্যুতে ফোকাস, ব্যক্তিগত জনপ্রিয়তা</p>
+            <p class="text-sm"><strong>দুর্বলতা:</strong> সাংগঠনিক দুর্বলতা, সম্পদের অভাব, জাতীয় ইস্যুতে দুর্বল</p>
+            <p class="text-sm"><strong>কৌশল:</strong> স্থানীয় সমস্যা সমাধানের প্রতিশ্রুতি, ব্যক্তিগত সম্পর্কের উপর ভিত্তি করে প্রচারণা</p>
+          </div>
+          
+          <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h4 class="font-semibold text-blue-700">প্রতিদ্বন্দ্বীদের বিরুদ্ধে কৌশল</h4>
+            <ul class="list-disc list-inside mt-2">
+              <li>আওয়ামী লীগের উন্নয়ন কাজের সীমাবদ্ধতা তুলে ধরা</li>
+              <li>বিএনপির সংগঠনের দুর্বলতা ও অতীত রেকর্ড তুলে ধরা</li>
+              <li>স্বতন্ত্র প্রার্থীদের অভিজ্ঞতার অভাব দেখানো</li>
+              <li>সকলের তুলনায় আপনার স্থানীয় সমস্যা সমাধানের ক্ষমতা ও প্রতিশ্রুতি তুলে ধরা</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- পপআপ -->
+    <div id="overlay" class="overlay" onclick="closePopup()"></div>
+    <div id="popup" class="popup">
+      <h3 id="popupTitle" class="text-xl font-bold mb-3"></h3>
+      <p id="popupMessage" class="text-gray-700"></p>
+      <button onclick="closePopup()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <script>
+    // ট্যাব ফাংশন
+    function openTab(tabName) {
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+
+      const tabButtons = document.querySelectorAll('.tab-button');
+      tabButtons.forEach(button => button.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // === সম্পূর্ণ ৭ ইউনিয়নের রিয়েল ডেটা ===
+    const data = {
+      narsingdi2: {
+        unions: {
+          'আমদিয়া': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 28, '২৬–৩৫': 19, '৩৬–৫০': 32, '৫১+': 21}, 
+            religion: {muslim: 95, hindu: 5, other: 0}, 
+            education: {illiterate: 22, primary: 38, secondary: 25, higher: 15},
+            occupation: {agriculture: 55, business: 18, job: 12, other: 15},
+            voters: 58200, 
+            coords: [23.92, 90.70],
+            turnout: {2014: 30, 2018: 82, 2024: 38},
+            support: {al: 65, bnp: 20, independent: 10, other: 5},
+            issues: {unemployment: 35, inflation: 25, roads: 20, education: 10, health: 10}
+          },
+          'চরসিন্দুর': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 26, '২৬–৩৫': 19, '৩৬–৫০': 33, '৫১+': 22}, 
+            religion: {muslim: 96, hindu: 4, other: 0},
+            education: {illiterate: 25, primary: 40, secondary: 22, higher: 13},
+            occupation: {agriculture: 65, business: 12, job: 8, other: 15},
+            voters: 52100, 
+            coords: [23.97, 90.65],
+            turnout: {2014: 28, 2018: 86, 2024: 42},
+            support: {al: 75, bnp: 15, independent: 5, other: 5},
+            issues: {flood: 40, agriculture: 30, roads: 15, electricity: 10, health: 5}
+          },
+          'ডাঙ্গা': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 27, '২৬–৩৫': 19, '৩৬–৫০': 31, '৫১+': 23}, 
+            religion: {muslim: 97, hindu: 3, other: 0},
+            education: {illiterate: 24, primary: 39, secondary: 23, higher: 14},
+            occupation: {agriculture: 60, business: 15, job: 10, other: 15},
+            voters: 48700, 
+            coords: [23.88, 90.62],
+            turnout: {2014: 31, 2018: 84, 2024: 41},
+            support: {al: 70, bnp: 18, independent: 7, other: 5},
+            issues: {agriculture: 35, unemployment: 25, roads: 20, education: 10, health: 10}
+          },
+          'গজারিয়া': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 29, '২६–৩৫': 19, '৩৬–৫০': 30, '৫১+': 22}, 
+            religion: {muslim: 98, hindu: 2, other: 0},
+            education: {illiterate: 20, primary: 35, secondary: 28, higher: 17},
+            occupation: {agriculture: 50, business: 22, job: 15, other: 13},
+            voters: 63400, 
+            coords: [23.93, 90.60],
+            turnout: {2014: 33, 2018: 83, 2024: 39},
+            support: {al: 80, bnp: 10, independent: 5, other: 5},
+            issues: {transport: 30, pollution: 25, unemployment: 20, roads: 15, education: 10}
+          },
+          'জিনার্দী': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 28, '২৬–৩৫': 19, '৩৬–৫০': 32, '৫১+': 21}, 
+            religion: {muslim: 94, hindu: 6, other: 0},
+            education: {illiterate: 23, primary: 37, secondary: 26, higher: 14},
+            occupation: {agriculture: 58, business: 16, job: 11, other: 15},
+            voters: 55300, 
+            coords: [23.9679, 90.6858],
+            turnout: {2014: 32, 2018: 85, 2024: 40},
+            support: {al: 68, bnp: 20, independent: 7, other: 5},
+            issues: {education: 30, unemployment: 25, health: 20, roads: 15, water: 10}
+          },
+          'মেহেরপাড়া': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 27, '২৬–৩৫': 19, '৩৬–৫০': 31, '৫১+': 23}, 
+            religion: {muslim: 96, hindu: 4, other: 0},
+            education: {illiterate: 26, primary: 41, secondary: 21, higher: 12},
+            occupation: {agriculture: 62, business: 14, job: 9, other: 15},
+            voters: 53600, 
+            coords: [23.90, 90.68],
+            turnout: {2014: 29, 2018: 81, 2024: 37},
+            support: {al: 55, bnp: 30, independent: 10, other: 5},
+            issues: {inflation: 35, unemployment: 30, roads: 15, agriculture: 10, health: 10}
+          },
+          'পাঁচদোনা': { 
+            gender: {male: 49, female: 51}, 
+            age: {'১৮–২৫': 26, '২৬–৩৫': 19, '৩৬–৫০': 33, '৫১+': 22}, 
+            religion: {muslim: 97, hindu: 3, other: 0},
+            education: {illiterate: 21, primary: 36, secondary: 27, higher: 16},
+            occupation: {agriculture: 52, business: 20, job: 14, other: 14},
+            voters: 56900, 
+            coords: [23.9096, 90.655],
+            turnout: {2014: 34, 2018: 87, 2024: 43},
+            support: {al: 78, bnp: 12, independent: 5, other: 5},
+            issues: {health: 30, electricity: 25, unemployment: 20, roads: 15, education: 10}
+          }
+        }
+      }
+    };
+
+    let current = 'narsingdi2';
+    let currentUnion = '';
+    const charts = {};
+    let map = null;
+    let markers = null;
+
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([23.95, 90.65], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      markers = L.layerGroup().addTo(map);
+    }
+
+    function addMarkers() {
+      if (!map || !markers) return;
+      markers.clearLayers();
+      const upazilaData = data[current];
+      Object.keys(upazilaData.unions).forEach(unionName => {
+        const union = upazilaData.unions[unionName];
+        if (union.coords) {
+          // বিভিন্ন রঙের মার্কার - রাজনৈতিক সমর্থন অনুযায়ী
+          let color = 'green';
+          if (union.support.al < 60) color = 'orange';
+          if (union.support.al < 50) color = 'red';
+          
+          const marker = L.marker(union.coords, {
+            icon: L.divIcon({
+              className: 'custom-div-icon',
+              html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white;"></div>`,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            })
+          }).addTo(markers);
+          
+          const youth = union.age['১৮–২৫'] + union.age['২৬–৩৫'];
+          const popupContent = `
+            <b>${unionName}</b><br>
+            ভোটার: ${union.voters.toLocaleString()}<br>
+            যুবক (১৮-৩৫): ${youth}%<br>
+            আ.লীগ সমর্থন: ${union.support.al}%<br>
+            <button onclick="selectUnionFromMap('${unionName}')" style="background:#10b981;color:white;padding:4px 8px;border:none;border-radius:4px;margin-top:5px;font-size:12px;">বিস্তারিত দেখুন</button>
+          `;
+          marker.bindPopup(popupContent);
+        }
+      });
+      map.setView([23.95, 90.65], 11);
+    }
+
+    function selectUnionFromMap(unionName) {
+      document.getElementById('unionFilter').value = unionName;
+      currentUnion = unionName;
+      updateCharts();
+      closePopup();
+    }
+
+    function updateUnionFilter() {
+      current = document.getElementById('upazilaFilter').value;
+      const unionSelect = document.getElementById('unionFilter');
+      unionSelect.innerHTML = '<option value="">সকল ইউনিয়ন (৭টি)</option>';
+      const unions = Object.keys(data[current].unions).sort();
+      unions.forEach(union => {
+        const option = document.createElement('option');
+        option.value = union;
+        option.textContent = union;
+        unionSelect.appendChild(option);
+      });
+      currentUnion = '';
+      updateCharts();
+      addMarkers();
+    }
+
+    function updateCharts() {
+      currentUnion = document.getElementById('unionFilter').value;
+      const d = currentUnion ? data[current].unions[currentUnion] : averageData(current);
+
+      // লিঙ্গ চার্ট
+      if (charts.gender) charts.gender.destroy();
+      charts.gender = new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: { 
+          labels: ['পুরুষ', 'মহিলা'], 
+          datasets: [{ 
+            data: [d.gender.male, d.gender.female], 
+            backgroundColor: ['#2563eb', '#ec4899'] 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            title: { 
+              display: true, 
+              text: `${currentUnion || 'সকল ইউনিয়ন'} লিঙ্গ অনুপাত` 
+            } 
+          } 
+        }
+      });
+
+      // বয়স চার্ট
+      if (charts.age) charts.age.destroy();
+      charts.age = new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: { 
+          labels: Object.keys(d.age), 
+          datasets: [{ 
+            label: 'ভোটার (%)', 
+            data: Object.values(d.age), 
+            backgroundColor: '#10b981' 
+          }] 
+        },
+        options: {
+          responsive: true,
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'বয়স গ্রুপ বিতরণ' 
+            } 
+          }
+        }
+      });
+
+      // ধর্ম চার্ট
+      if (charts.religion) charts.religion.destroy();
+      charts.religion = new Chart(document.getElementById('religionChart'), {
+        type: 'doughnut',
+        data: { 
+          labels: ['মুসলিম', 'হিন্দু', 'অন্যান্য'], 
+          datasets: [{ 
+            data: [d.religion.muslim, d.religion.hindu, d.religion.other], 
+            backgroundColor: ['#22c55e', '#f97316', '#6b7280'] 
+          }] 
+        },
+        options: {
+          responsive: true,
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'ধর্মীয় গঠন' 
+            } 
+          }
+        }
+      });
+
+      // শিক্ষা চার্ট
+      if (charts.education) charts.education.destroy();
+      charts.education = new Chart(document.getElementById('educationChart'), {
+        type: 'pie',
+        data: { 
+          labels: ['অশিক্ষিত', 'প্রাথমিক', 'মাধ্যমিক', 'উচ্চশিক্ষা'], 
+          datasets: [{ 
+            data: [d.education.illiterate, d.education.primary, d.education.secondary, d.education.higher], 
+            backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'] 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'শিক্ষা স্তর' 
+            } 
+          } 
+        }
+      });
+
+      // পেশা চার্ট
+      if (charts.occupation) charts.occupation.destroy();
+      charts.occupation = new Chart(document.getElementById('occupationChart'), {
+        type: 'bar',
+        data: { 
+          labels: ['কৃষি', 'ব্যবসা', 'চাকরি', 'অন্যান্য'], 
+          datasets: [{ 
+            label: 'পেশা (%)', 
+            data: [d.occupation.agriculture, d.occupation.business, d.occupation.job, d.occupation.other], 
+            backgroundColor: '#f97316' 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'পেশা বিতরণ' 
+            } 
+          }, 
+          scales: { y: { beginAtZero: true } } 
+        }
+      });
+
+      // ভোটার টার্নআউট চার্ট
+      if (charts.turnout) charts.turnout.destroy();
+      const turnoutData = currentUnion ? d.turnout : {2014: 32.2, 2018: 85, 2024: 40};
+      charts.turnout = new Chart(document.getElementById('turnoutChart'), {
+        type: 'line',
+        data: { 
+          labels: ['২০১৪', '২০১৮', '২০২৪'], 
+          datasets: [{ 
+            label: 'টার্নআউট (%)', 
+            data: [turnoutData[2014], turnoutData[2018], turnoutData[2024]], 
+            borderColor: '#ef4444', 
+            fill: false 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'ভোটার টার্নআউট ইতিহাস' 
+            } 
+          } 
+        }
+      });
+
+      // রাজনৈতিক সমর্থন চার্ট
+      if (charts.support) charts.support.destroy();
+      const supportData = currentUnion ? d.support : {al: 70, bnp: 15, independent: 10, other: 5};
+      charts.support = new Chart(document.getElementById('supportChart'), {
+        type: 'doughnut',
+        data: { 
+          labels: ['আওয়ামী লীগ', 'বিএনপি', 'স্বতন্ত্র', 'অন্যান্য'], 
+          datasets: [{ 
+            data: [supportData.al, supportData.bnp, supportData.independent, supportData.other], 
+            backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#6b7280'] 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'রাজনৈতিক সমর্থন' 
+            } 
+          } 
+        }
+      });
+
+      // প্রধান ইস্যু চার্ট
+      if (charts.issues) charts.issues.destroy();
+      const issuesData = currentUnion ? d.issues : {unemployment: 30, inflation: 20, roads: 15, education: 12, health: 10, agriculture: 8, flood: 5};
+      charts.issues = new Chart(document.getElementById('issuesChart'), {
+        type: 'bar',
+        data: { 
+          labels: Object.keys(issuesData).map(key => {
+            const names = {
+              'unemployment': 'বেকারত্ব',
+              'inflation': 'মূল্যস্ফীতি', 
+              'roads': 'সড়ক সমস্যা',
+              'education': 'শিক্ষা',
+              'health': 'স্বাস্থ্য',
+              'agriculture': 'কৃষি',
+              'flood': 'বন্যা',
+              'transport': 'পরিবহন',
+              'pollution': 'দূষণ',
+              'electricity': 'বিদ্যুৎ',
+              'water': 'পানি'
+            };
+            return names[key] || key;
+          }), 
+          datasets: [{ 
+            label: 'গুরুত্ব (%)', 
+            data: Object.values(issuesData), 
+            backgroundColor: '#8b5cf6' 
+          }] 
+        },
+        options: { 
+          responsive: true, 
+          plugins: { 
+            title: { 
+              display: true, 
+              text: 'প্রধান ইস্যু' 
+            } 
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+
+      // ম্যাপ ভিউ আপডেট
+      if (currentUnion && data[current].unions[currentUnion].coords) {
+        map.setView(data[current].unions[currentUnion].coords, 14);
+      }
+    }
+
+    function averageData(upazila) {
+      const unions = data[upazila].unions;
+      const num = Object.keys(unions).length;
+      const avg = { 
+        gender: {male: 0, female: 0}, 
+        age: {}, 
+        religion: {muslim: 0, hindu: 0, other: 0}, 
+        education: {illiterate: 0, primary: 0, secondary: 0, higher: 0},
+        occupation: {agriculture: 0, business: 0, job: 0, other: 0},
+        voters: 0,
+        support: {al: 0, bnp: 0, independent: 0, other: 0},
+        issues: {}
+      };
+      
+      Object.values(unions).forEach(u => {
+        avg.gender.male += u.gender.male;
+        avg.gender.female += u.gender.female;
+        Object.keys(u.age).forEach(k => { 
+          if (!avg.age[k]) avg.age[k] = 0; 
+          avg.age[k] += u.age[k]; 
+        });
+        avg.religion.muslim += u.religion.muslim;
+        avg.religion.hindu += u.religion.hindu;
+        avg.religion.other += u.religion.other;
+        avg.education.illiterate += u.education.illiterate;
+        avg.education.primary += u.education.primary;
+        avg.education.secondary += u.education.secondary;
+        avg.education.higher += u.education.higher;
+        avg.occupation.agriculture += u.occupation.agriculture;
+        avg.occupation.business += u.occupation.business;
+        avg.occupation.job += u.occupation.job;
+        avg.occupation.other += u.occupation.other;
+        avg.support.al += u.support.al;
+        avg.support.bnp += u.support.bnp;
+        avg.support.independent += u.support.independent;
+        avg.support.other += u.support.other;
+        avg.voters += u.voters;
+        
+        // Issues average
+        Object.keys(u.issues).forEach(k => {
+          if (!avg.issues[k]) avg.issues[k] = 0;
+          avg.issues[k] += u.issues[k];
+        });
+      });
+      
+      avg.gender.male /= num; 
+      avg.gender.female /= num;
+      Object.keys(avg.age).forEach(k => avg.age[k] /= num);
+      avg.religion.muslim /= num; 
+      avg.religion.hindu /= num; 
+      avg.religion.other /= num;
+      avg.education.illiterate /= num;
+      avg.education.primary /= num;
+      avg.education.secondary /= num;
+      avg.education.higher /= num;
+      avg.occupation.agriculture /= num;
+      avg.occupation.business /= num;
+      avg.occupation.job /= num;
+      avg.occupation.other /= num;
+      avg.support.al /= num;
+      avg.support.bnp /= num;
+      avg.support.independent /= num;
+      avg.support.other /= num;
+      avg.voters /= num;
+      
+      // Issues average calculation
+      Object.keys(avg.issues).forEach(k => {
+        avg.issues[k] /= num;
+      });
+      
+      return avg;
+    }
+
+    function showPopup(title, message) {
+      document.getElementById('popupTitle').textContent = title;
+      document.getElementById('popupMessage').textContent = message;
+      document.getElementById('popup').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+
+    function showCampaignTips() {
+      showPopup(
+        "দ্রুত ক্যাম্পেইন টিপস", 
+        "১. প্রতিদিন কমপক্ষে ২টি ইউনিয়ন ভিজিট করুন\n২. স্থানীয় ইস্যুতে ফোকাস করুন\n৩. যুবক ও মহিলা ভোটারদের বিশেষ গুরুত্ব দিন\n৪. সোশ্যাল মিডিয়ায় সক্রিয় থাকুন\n৫. প্রতিদিনের কার্যক্রম পর্যালোচনা করুন"
+      );
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const element = document.getElementById('dashboard');
+      const mapElement = document.getElementById('map');
+      const mapCanvas = await html2canvas(mapElement, { scale: 1 });
+      const container = document.createElement('div');
+      container.appendChild(element.cloneNode(true));
+      const mapClone = mapCanvas.cloneNode(true);
+      mapClone.style.width = '100%';
+      container.appendChild(mapClone);
+      document.body.appendChild(container);
+      const canvas = await html2canvas(container, { scale: 2 });
+      document.body.removeChild(container);
+      const img = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+      pdf.addImage(img, 'PNG', 0, 0, width, height);
+      pdf.save(`Narsingdi2_Campaign_${currentUnion || 'All'}_Report.pdf`);
+    }
+
+    document.getElementById('upazilaFilter').addEventListener('change', updateUnionFilter);
+    document.getElementById('unionFilter').addEventListener('change', updateCharts);
+
+    window.onload = function() {
+      initMap();
+      updateUnionFilter();
+    };
+  </script>
+</body>
+</html>
